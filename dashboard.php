@@ -81,7 +81,7 @@ $staff_code = $_SESSION["staff_code"];
                     <p class="text-2xl font-bold text-lime-700">
                     <?php
                         $status = 'pending';
-                        $sql2 = ( $role === "D/CEO" || $role === "CEO") ? "SELECT COUNT(*) AS pendings FROM fuel_request WHERE status = '$status'": "SELECT COUNT(*) AS pendings FROM fuel_request WHERE status = '$status' AND stf_code = '$id'";
+                        $sql2 = ( $role === "D/CEO" || $role === "CEO") ? "SELECT COUNT(*) AS pendings FROM fuel_request WHERE status = '$status' AND verified_by != '-'": "SELECT COUNT(*) AS pendings FROM fuel_request WHERE status = '$status' AND stf_code = '$id'";
                         $pending = mysqli_query($db,$sql2);
                         $Prows = mysqli_fetch_array($pending);
                         echo $Prows['pendings'];
@@ -110,19 +110,19 @@ $staff_code = $_SESSION["staff_code"];
 
                     <?php
 
-                    $requests = ($role === "D/CEO" || $role === "CEO") ? "SELECT * FROM fuel_request ORDER BY created_at ASC LIMIT 3" : " SELECT * FROM fuel_request WHERE stf_code = '$id' ORDER BY created_at ASC LIMIT 3 ";
+                    $requests = ($role === "D/CEO" || $role === "CEO") ? "SELECT * FROM fuel_request WHERE verified_by != '-' ORDER BY created_at ASC LIMIT 3" : " SELECT * FROM fuel_request WHERE stf_code = '$id' ORDER BY created_at ASC LIMIT 3 ";
                     $result = mysqli_query($db,$requests);
+                    $i = 0;
                     while($row = mysqli_fetch_array($result)){
-                        $i = 1;
+                        $i++;
                         echo "
                         <tr class='border-b border-gray-200'>
-                            <td class='p-2 text-center'>".$i. "</td>
-                            <td class='p-2 text-center'>".$row['head_mission']. "</td>
-                            <td class='p-2 text-center'>".$row['requested_qty']. "</td>
-                            <td class='p-2 text-center text-lime-700'>".$row['status']. "</td>
+                            <td class='p-2 text-center'>". $i ."</td>
+                            <td class='p-2 text-center'>". $row['head_mission'] ."</td>
+                            <td class='p-2 text-center'>". $row['requested_qty'] ."</td>
+                            <td class='p-2 text-center text-lime-700'>". $row['status'] ."</td>
                         </tr>
                         ";
-                        $i++;
                     }
 
                     ?>

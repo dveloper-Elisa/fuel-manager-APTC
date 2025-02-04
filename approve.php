@@ -21,7 +21,7 @@ if(isset($_GET["approve"])){
         $verified_by = $_SESSION['name'];
         $approved_by = $_SESSION['name'];
 
-        $approve = mysqli_query($db, "UPDATE fuel_request SET received_qty = '$granted_quantinty', verified_by = 'MUYENZI SIMPUNGA Charlse', approved_by = '$approved_by', status = 'approved' WHERE req_id = '$id'");
+        $approve = mysqli_query($db, "UPDATE fuel_request SET received_qty = '$granted_quantinty', approved_by = '$approved_by', status = 'approved' WHERE req_id = '$id'");
 
         if($approve){
             ?>

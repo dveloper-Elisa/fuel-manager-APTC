@@ -13,7 +13,7 @@ include("./connection.php");
 
 // Check if 'id' is set to generate PDF
 if (isset($_GET['id'])) {
-    require('fpdf/fpdf.php');
+    require ('fpdf/fpdf.php');
 
     $sql = mysqli_query($db, 'SELECT * FROM fuel_request WHERE req_id ='.$_GET['id'].'');
     // Create PDF object
@@ -21,9 +21,10 @@ if (isset($_GET['id'])) {
     $fuelDocument->AddPage();
     $fuelDocument->SetFont('Times', '', 12);
     $fuelDocument->Image('./img/image.png', 60, 10, 100, );
-    $fuelDocument->Ln(20);
+    $fuelDocument->Ln(30);
+    $fuelDocument->SetFont('Times', 'B', 16);
     $fuelDocument->Cell(0, 10, 'Fuel Request Document', 0, 1, 'C');
-    $fuelDocument->Ln(20);
+    $fuelDocument->Ln(15);
 
     // Document formatting
     while ($row = mysqli_fetch_array($sql)) {
@@ -108,7 +109,7 @@ if (isset($_GET['id'])) {
             $fuelDocument->Cell(95, 10, 'Prepared by: ', 0, 0, 'L');
             $fuelDocument->Cell(95, 10, 'Approved by: ', 0, 1, 'L');
     
-            $fuelDocument->Cell(95, 10, 'MUYENZI SIMPUNGA Charlse', 0, 0, 'L');
+            $fuelDocument->Cell(95, 10, $row['verified_by'], 0, 0, 'L');
             $fuelDocument->Cell(95, 10, $row['approved_by'], 0, 1, 'L');
     
             $fuelDocument->Cell(95, 10, 'H/LOGISTIC APTC', 0, 0, 'L');
@@ -134,7 +135,7 @@ if (!$sql) {
     die("Error in query: " . mysqli_error($db));
 }
 
-
+// GETING REQUEST DETAILS ON POPUP
 if (isset($_GET['req_id'])) {
     $req_id = $_GET['req_id'];
     // Fetch request details from the database
@@ -148,6 +149,23 @@ if (isset($_GET['req_id'])) {
         echo json_encode($row); // Send JSON response
     } else {
         echo json_encode(['error' => 'Request not found']);
+    }
+    exit;
+}
+
+// APPROVE REQUEST ON BEHALF OG LOGISTICS
+if(isset($_GET['verify'])) {
+    $req_id = $_GET['verify'];
+    $verifier = $_SESSION['name'];
+
+    $query = 'UPDATE fuel_request SET verified_by = ? WHERE req_id = ?';
+    $stmt = $db->prepare($query);
+    $stmt->bind_param('si', $verifier,$req_id);
+    if($stmt->execute()){
+        echo json_encode(['message' => 'Request Verifiyed']);
+    }else{
+        echo json_encode(['message' => 'Request not Verifiyed']);
+
     }
     exit;
 }
@@ -187,18 +205,24 @@ if (isset($_GET['req_id'])) {
             <?php
             // Fetch status from URL
             $status = isset($_GET['status']) ? $_GET['status'] : 'all';
+            $id = $_SESSION['staff_code'] ;
 
             // SQL query based on status
             if ($status === 'all') {
-                $query = "SELECT * FROM fuel_request"; // Show all records
+                $query = (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO' || strtolower($_SESSION['role']) == 'logistics') ? "SELECT * FROM fuel_request" : "SELECT * FROM fuel_request WHERE stf_code = '$id'"; // Show all records
             } else {
-                $query = "SELECT * FROM fuel_request WHERE status = ?";
+                $query = (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO' || strtolower($_SESSION['role']) == 'logistics') ? "SELECT * FROM fuel_request WHERE status = ?":"SELECT * FROM fuel_request WHERE status = ? AND stf_code = ?";
             }
 
             // Prepare and execute the query
             if ($stmt = $db->prepare($query)) {
                 if ($status !== 'all') {
-                    $stmt->bind_param("s", $status);
+                    if ((strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO' || strtolower($_SESSION['role']) == 'logistics')){
+                $stmt->bind_param('s', $status);
+                    }
+                    else{
+                        $stmt->bind_param('si',$status, $id);
+                    }
                 }
                 $stmt->execute();
                 $result = $stmt->get_result();
@@ -220,15 +244,15 @@ if (isset($_GET['req_id'])) {
             echo '</tr></thead><tbody class="bg-white">';
 
             while ($row = $result->fetch_assoc()) {
-                echo '<tr class="border-b bg-lime-900 hover:bg-lime-800"> 
-                    <td class="p-3 border text-lime-100">' . htmlspecialchars($row['head_mission']) . '</td>
-                    <td class="p-3 border text-lime-100">' . htmlspecialchars($row['driver_name']) . '</td>
-                    <td class="p-3 border text-lime-100">' . htmlspecialchars($row['location_to']) . '</td>
-                    <td class="p-3 border text-lime-100">' . htmlspecialchars($row['date_from']) . '</td>
-                    <td class="p-3 border text-lime-100">' . htmlspecialchars($row['fuel_type']) . '</td>';
+                echo '<tr class="border-b bg-lime-900 hover:bg-lime-800">
+                    <td class="text-[12px] border text-lime-100">' . htmlspecialchars($row['head_mission']) . '</td>
+                    <td class="text-[12px] border text-lime-100">' . htmlspecialchars($row['driver_name']) . '</td>
+                    <td class="text-[12px] border text-lime-100">' . htmlspecialchars($row['location_to']) . '</td>
+                    <td class="text-[12px] border text-lime-100">' . htmlspecialchars($row['date_from']) . '</td>
+                    <td class="text-[12px] border text-lime-100">' . htmlspecialchars($row['fuel_type']) . '</td>';
             
                 if (strtoupper($_SESSION['role']) === 'D/CEO' || strtoupper($_SESSION['role']) === 'CEO') {
-                    echo '<td class="p-3 border">
+                    echo '<td class="p-1 border">
                         <a href="requests.php?cancel=' . urlencode($row['req_id']) . '" class="text-red-500 hover:underline">Cancel</a>';
 
                     if ($row['status'] === 'approved') {
@@ -263,11 +287,6 @@ if (isset($_GET['req_id'])) {
                 <div class="bg-white p-6 rounded-lg w-1/3">
                     <h2 class="text-xl font-bold text-gray-700">Request Details</h2>
                     <p id="requestDetails" class="mt-4 text-gray-600"></p>
-                    <div class="mt-4 flex justify-between">
-                        <button onclick="approveRequest()" class="bg-green-500 text-white px-4 py-2 rounded">Approve</button>
-                        <button onclick="cancelRequest()" class="bg-red-500 text-white px-4 py-2 rounded">Cancel</button>
-                        <button onclick="closeModal()" class="bg-gray-500 text-white px-4 py-2 rounded">X</button>
-                    </div>
                 </div>
             </div>
 
@@ -275,12 +294,14 @@ if (isset($_GET['req_id'])) {
     </div>
 
     <script>
+        // FETCHING VIEW REQUEST OF POPUP
         function viewRequest(id) {
             fetch(`requests.php?req_id=${id}`)
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById("requestDetails").innerHTML = 
-                        `<b>Mission:</b> ${data.head_mission}<br>
+                    `<b>Satatus:</b> <span class='text-blue-800 capitalize p-x-2 font-light rounded-md text-center'>${data.status}</span><br>
+                        <b>Mission:</b> ${data.head_mission}<br>
                          <b>Driver:</b> ${data.driver_name}<br>
                          <b>Vehicle:</b> ${data.vehicle_type}<br>
                          <b>Plate Number:</b> ${data.plate_number}<br>
@@ -290,7 +311,11 @@ if (isset($_GET['req_id'])) {
                          <b>Return:</b> ${data.date_to}<br>
                          <b>Requested Fuel:</b> ${data.requested_qty} L <br>
                          <b>Fuel:</b> ${data.fuel_type}<br>
-                         
+                            <div class="mt-4 flex justify-between"> 
+                                <button onclick='verifyRequest(${data.req_id})' ${data.status.toLowerCase() === 'approved'? 'disabled' : ''} class="disable bg-green-500 text-white px-4 py-2 rounded">${data.status.toLowerCase() === 'approved'? 'Approved' : 'Verify'}</button>
+                                <button onclick="cancelRequest(${data.req_id})" class="bg-red-500 text-white px-4 py-2 rounded">Cancel</button>
+                                <button onclick="closeModal(${data.req_id})" class="bg-gray-500 text-white px-4 py-2 rounded">X</button>
+                            </div>
                          `;
                     document.getElementById("requestModal").classList.remove("hidden");
                 });
@@ -300,13 +325,15 @@ if (isset($_GET['req_id'])) {
             document.getElementById("requestModal").classList.add("hidden");
         }
 
-        function approveRequest() {
-            alert("Request Approved!");
+        function verifyRequest(id) {
+            fetch(`requests.php?verify=${id}`)
+            .then(response => response.json())
+            .then(data => alert(data.message))
             closeModal();
         }
 
-        function cancelRequest() {
-            alert("Request Canceled!");
+        function cancelRequest(id) {
+            alert(id, "Request Canceled!");
             closeModal();
         }
     </script>
