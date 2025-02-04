@@ -170,6 +170,38 @@ if(isset($_GET['verify'])) {
     exit;
 }
 
+/* 
+
+CANCELING REQUEST on BEHALF OF LOGISTICS
+AND ON BEHAKF OF CEO or D/CEO
+
+*/
+if(isset($_GET['reject']) || isset($_GET['cancel'])) {
+    $req_id = isset($_GET['reject']) ? $_GET['reject'] : $_GET['cancel'] ;
+    $status = 'rejected';
+    $query = 'UPDATE fuel_request SET status = ? WHERE req_id = ?';
+    $stmt = $db->prepare($query);
+    $stmt->bind_param('si', $status, $req_id);
+
+    if(isset($_GET['cancel'])){
+        ?>
+        <script>
+            alert("Request Rejected")
+            location='./requests.php'
+        </script>
+
+        <?php
+        return;
+    }
+
+    if($stmt -> execute()){
+        echo json_encode(['message'=> 'Request rejected']);
+    }else{
+        echo json_encode(['message'=> 'Request failed to reject']);
+    }
+}
+
+
 ?>
 
 <!DOCTYPE html>
@@ -197,9 +229,9 @@ if(isset($_GET['verify'])) {
 
             <!-- Status Filter Links -->
             <div class="mt-4 flex space-x-4">
-                <a href="requests.php?status=approved" class="px-4 py-2 bg-lime-700 text-white rounded-md">Approved</a>
-                <a href="requests.php?status=pending" class="px-4 py-2 bg-yellow-500 text-white rounded-md">Pending</a>
-                <a href="requests.php?status=rejected" class="px-4 py-2 bg-red-500 text-white rounded-md">Canceled</a>
+               <a href="requests.php?status=approved" class="<?php echo (isset($_GET['status']) && $_GET['status'] === 'approved') ? 'border-t-4 border-zinc-900 px-4 py-2 bg-lime-700 text-white rounded-md' : 'px-4 py-2 bg-lime-700 text-white rounded-md'; ?>">Approved</a>
+                <a href="requests.php?status=pending" class="<?php echo (isset($_GET['status']) && $_GET['status'] === 'pending') ? 'border-t-4 border-zinc-900 px-4 py-2 bg-yellow-500 text-white rounded-md' :'px-4 py-2 bg-yellow-500 text-white rounded-md' ?>">Pending</a>
+                <a href="requests.php?status=rejected" class="<?php echo (isset($_GET['status']) && $_GET['status'] === 'rejected') ? 'border-t-4 border-zinc-900 px-4 py-2 bg-red-500 text-white rounded-md' : 'px-4 py-2 bg-red-500 text-white rounded-md' ?>">Canceled</a>
             </div>
 
             <?php
@@ -333,7 +365,9 @@ if(isset($_GET['verify'])) {
         }
 
         function cancelRequest(id) {
-            alert(id, "Request Canceled!");
+            fetch(`requests.php?reject=${id}`)
+            .then(response => response.json())
+            .then(data => alert(data.message))
             closeModal();
         }
     </script>
