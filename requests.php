@@ -229,9 +229,9 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
 
             <!-- Status Filter Links -->
             <div class="mt-4 flex space-x-4">
-                <a href="requests.php?status=approved" class="<?php echo (isset($_GET['status']) && $_GET['status'] === 'approved') ? 'border-t-4 border-zinc-900 px-2 py-1 bg-lime-700 text-white rounded-md' : 'px-2 py-1 bg-lime-700 text-white rounded-md'; ?>"><i class="fa-solid fa-check-circle text-green-500"></i> Approved</a>
-                <a href="requests.php?status=pending" class="<?php echo (isset($_GET['status']) && $_GET['status'] === 'pending') ? 'border-t-4 border-zinc-900 px-2 py-1 bg-yellow-500 text-white rounded-md' : 'px-2 py-1 bg-yellow-500 text-white rounded-md' ?>"><i class="fa-solid fa-hourglass-half text-pink-900"></i> Pending</a>
-                <a href="requests.php?status=rejected" class="<?php echo (isset($_GET['status']) && $_GET['status'] === 'rejected') ? 'border-t-4 border-zinc-900 px-2 py-1 bg-red-500 text-white rounded-md' : 'px-2 py-1 bg-red-500 text-white rounded-md' ?>"><i class="fa-solid fa-times-circle text-red-900"></i> Canceled</a>
+                <a href="requests.php?status=approved" class="<?php echo (isset($_GET['status']) && $_GET['status'] === 'approved') ? 'border-t-4 border-zinc-900 px-2 py-1 bg-lime-700 text-white rounded-md' : 'px-2 py-1 bg-lime-700 text-white rounded-md'; ?>">✅ Approved</a>
+                <a href="requests.php?status=pending" class="<?php echo (isset($_GET['status']) && $_GET['status'] === 'pending') ? 'border-t-4 border-zinc-900 px-2 py-1 bg-yellow-600 text-white rounded-md' : 'px-2 py-1 bg-yellow-600 text-white rounded-md' ?>">⏳ Pending</a>
+                <a href="requests.php?status=rejected" class="<?php echo (isset($_GET['status']) && $_GET['status'] === 'rejected') ? 'border-t-4 border-zinc-900 px-2 py-1 bg-red-500 text-white rounded-md' : 'px-2 py-1 bg-red-700 text-white rounded-md' ?>">🚫 Canceled</a>
             </div>
 
             <?php
@@ -326,9 +326,9 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
                     }
 
                     if ($row['status'] === 'approved') {
-                        echo '<a href="?id=' . urlencode($row['req_id']) . '" class="text-blue-500 hover:underline ml-2">Download PDF</a>';
+                        echo '<a href="?id=' . urlencode($row['req_id']) . '" class="text-blue-500 hover:underline ml-2">⬇️ PDF</a>';
                     } else {
-                        echo '<span class="text-gray-400 ml-2 cursor-not-allowed">Download PDF</span>';
+                        echo '<span class="text-gray-400 ml-2 cursor-not-allowed">⬇️ PDF</span>';
                     }
                     echo '</td>';
                 }
@@ -340,7 +340,7 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
                 echo '</tr>';
             }
 
-            echo '</tbody></table> </div>'; // Close the table and the div
+            echo '</tbody></table> </div>';
 
 
             // Pagination controls

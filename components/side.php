@@ -1,28 +1,35 @@
 <!-- Menu Toggle Button -->
-<button id="menu-toggle" class="absolute text-blue-500 text-xl cursor-pointer top-5 left-5 md:hidden">
+<button id="menu-toggle" class="z-50 absolute text-blue-500 text-xl cursor-pointer top-5 left-5 md:hidden">
     <i class="fa-solid fa-bars"></i>
 </button>
 
 <!-- Sidebar -->
-<aside id="sidebar" class="w-0 bg-lime-700 text-white p-5 transition-all duration-300 md:w-fit md:block hidden">
+<aside id="sidebar" class="z-30 w-0 bg-lime-700 text-white p-5 transition-all duration-300 md:w-fit md:block hidden">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <!-- Navigation -->
     <nav id="nav" class="ml-5">
-        <h3 class="text-lg font-bold mb-6">Fuel Management</h3>
+        <h3 class="text-md font-bold mb-6 whitespace-nowrap">Fuel Management</h3>
         <ul>
-            <li class="mb-4">
-                <a href="./dashboard.php" class="block p-2 hover:bg-lime-600 rounded">
+            <li class="mb-2">
+                <a href="./dashboard.php" class="block p-2 hover:bg-lime-600 rounded whitespace-nowrap">
                     <i class="fa-solid fa-home"></i> Dashboard
                 </a>
             </li>
-            <li class="mb-4">
+            <li class="mb-2">
                 <a href="./requests.php" class="block p-2 hover:bg-lime-600 rounded">
                     <i class="fa-solid fa-file-alt"></i> Requests
                 </a>
             </li>
-            <li class="mb-4">
+            <?php
+            echo (strtoupper($_SESSION['role']) === 'LOGISTICS') ? '<li class="mb-2">
+                <a href="./quick_request.php" class="block hover:bg-lime-600 rounded">
+                    <span class="text-white text-lg">⚡</span>QuickAct 
+                </a>
+            </li>' : '';
+            ?>
+            <li class="mb-2">
                 <a href="./pannel/logout.php" class="block p-2 hover:bg-red-600 rounded">
                     <i class="fa-solid fa-right-from-bracket"></i> Logout
                 </a>
@@ -38,9 +45,9 @@
 
     // Toggle Sidebar visibility
     function toggleSidebar() {
-        sidebar.classList.toggle("w-0");  // Collapse sidebar
-        sidebar.classList.toggle("w-fit"); // Expand sidebar
-        sidebar.classList.toggle("hidden"); // Hide sidebar on smaller screens
+        sidebar.classList.toggle("w-0");
+        sidebar.classList.toggle("w-fit");
+        sidebar.classList.toggle("hidden");
 
         // Change background color based on visibility
         if (sidebar.classList.contains("hidden")) {
@@ -57,7 +64,7 @@
 
     // Check screen size and adjust sidebar visibility on page load and resizing
     function checkScreenSize() {
-        if (window.innerWidth < 1024) {  // For medium and small screens
+        if (window.innerWidth < 1024) {
             sidebar.classList.add("hidden");
             sidebar.classList.remove("w-fit");
             sidebar.classList.add("w-0");
@@ -75,8 +82,8 @@
     // Ensure smooth transition for sidebar close on smaller screens
     sidebar.addEventListener('transitionend', () => {
         if (sidebar.classList.contains("hidden")) {
-            sidebar.style.transition = "none"; // Disable transition on close
-            sidebar.style.transition = ""; // Re-enable transition for future actions
+            sidebar.style.transition = "none";
+            sidebar.style.transition = "";
         }
     });
 </script>
