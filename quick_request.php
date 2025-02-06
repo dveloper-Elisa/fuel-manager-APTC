@@ -60,12 +60,12 @@ if (isset($_POST['quick_request'])) {
                 <div class="flex items-center space-x-4">
                     <span class="text-gray-600">Welcome, <?php echo "<b>" . $_SESSION["name"] . "</b>"; ?></span>
                     <?php echo (strtoupper($_SESSION['role']) == 'LOGISTICS') ?
-                        '<a href="./index.php" class="bg-lime-700 text-white p-1 rounded-md" alt="Send Request"> New Request </a>' : ''; ?>
+                        '<a href="#" class="bg-lime-700 text-white p-1 rounded-md" alt="Send Quick"> Quick Act </a>' : ''; ?>
                 </div>
             </div>
 
             <!-- DISPLAYING THE DATA FROM QUICK_ACTION IN CARDS AND ADD BUTTON FOR DOWNLOADING PDF -->
-            <?php // Pagination setup
+            <?php
             $limit = 10;
             $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
             $offset = ($page - 1) * $limit;
@@ -96,7 +96,7 @@ if (isset($_POST['quick_request'])) {
                         </div>
                         <!-- Download PDF Button -->
                         <div class="text-center mt-6">
-                            <a href="download.php?id=<?php echo $row['action_id'] ?>" class="bg-red-600 text-white px-3 py-2 rounded-lg hover:bg-red-700 transition whitespace-nowrap">
+                            <a href="download.php?id=<?php echo $row['action_id'] ?>" class="bg-blue-900 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition whitespace-nowrap">
                                 ⬇️ PDF
                             </a>
                         </div>
