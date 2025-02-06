@@ -1,11 +1,11 @@
 <?php
 
 error_reporting(E_ALL);
-ini_set("display_errors",1);
+ini_set("display_errors", 1);
 
 session_start();
 
-if(!isset($_SESSION["phone"]) || !isset($_SESSION["name"])){
+if (!isset($_SESSION["phone"]) || !isset($_SESSION["name"])) {
     header("Location:./login.php");
 }
 
@@ -13,14 +13,14 @@ include("./connection.php");
 
 // Check if 'id' is set to generate PDF
 if (isset($_GET['id'])) {
-    require ('fpdf/fpdf.php');
+    require('fpdf/fpdf.php');
 
-    $sql = mysqli_query($db, 'SELECT * FROM fuel_request WHERE req_id ='.$_GET['id'].'');
+    $sql = mysqli_query($db, 'SELECT * FROM fuel_request WHERE req_id =' . $_GET['id'] . '');
     // Create PDF object
     $fuelDocument = new FPDF();
     $fuelDocument->AddPage();
     $fuelDocument->SetFont('Times', '', 12);
-    $fuelDocument->Image('./img/image.png', 60, 10, 100, );
+    $fuelDocument->Image('./img/image.png', 60, 10, 100,);
     $fuelDocument->Ln(30);
     $fuelDocument->SetFont('Times', 'B', 16);
     $fuelDocument->Cell(0, 10, 'Fuel Request Document', 0, 1, 'C');
@@ -34,12 +34,12 @@ if (isset($_GET['id'])) {
             if ($fuelDocument->GetY() > 250) { // Adjust this value if necessary
                 $fuelDocument->AddPage();
             }
-    
+
             // Header of Mission
             $fuelDocument->Cell(95, 10, 'Header of Mission: ', 0, 0, 'L');
             $fuelDocument->SetFont('Times', 'B', 10);
             $fuelDocument->MultiCell(0, 10, $row['head_mission'], 0, 'L');
-    
+
             // Signature
             $fuelDocument->SetFont('Times', '', 10);
             $fuelDocument->Cell(95, 10, 'Signature: ', 0, 0, 'L');
@@ -47,78 +47,78 @@ if (isset($_GET['id'])) {
                 $fuelDocument->Image($row['signature'], 100, $fuelDocument->GetY(), 20);
             }
             $fuelDocument->Ln(10);
-    
+
             // Driver Name
             $fuelDocument->Cell(95, 10, 'Driver Name: ', 0, 0, 'L');
             $fuelDocument->SetFont('Times', 'B', 10);
             $fuelDocument->MultiCell(0, 10, $row['driver_name'], 0, 'L');
-    
+
             // Vehicle Type
             $fuelDocument->SetFont('Times', '', 10);
             $fuelDocument->Cell(95, 10, 'Vehicle Type: ', 0, 0, 'L');
             $fuelDocument->SetFont('Times', 'B', 10);
             $fuelDocument->MultiCell(0, 10, $row['vehicle_type'], 0, 'L');
-    
+
             // Plate Number
             $fuelDocument->SetFont('Times', '', 10);
             $fuelDocument->Cell(95, 10, 'Plate Number: ', 0, 0, 'L');
             $fuelDocument->SetFont('Times', 'B', 10);
             $fuelDocument->MultiCell(0, 10, $row['plate_number'], 0, 'L');
-    
+
             // Location From and To
             $fuelDocument->SetFont('Times', '', 10);
             $fuelDocument->Cell(95, 10, 'From: ', 0, 0, 'L');
             $fuelDocument->SetFont('Times', 'B', 10);
             $fuelDocument->MultiCell(0, 10, $row['location_from'], 0, 'L');
-    
+
             $fuelDocument->SetFont('Times', '', 10);
             $fuelDocument->Cell(95, 10, 'Destination: ', 0, 0, 'L');
             $fuelDocument->SetFont('Times', 'B', 10);
             $fuelDocument->MultiCell(0, 10, $row['location_to'], 0, 'L');
-    
+
             // Date of Departure and Return
             $fuelDocument->SetFont('Times', '', 10);
             $fuelDocument->Cell(95, 10, 'Date of Departure: ', 0, 0, 'L');
             $fuelDocument->SetFont('Times', 'B', 10);
             $fuelDocument->MultiCell(0, 10, $row['date_from'], 0, 'L');
-    
+
             $fuelDocument->SetFont('Times', '', 10);
             $fuelDocument->Cell(95, 10, 'Date of Return: ', 0, 0, 'L');
             $fuelDocument->SetFont('Times', 'B', 10);
             $fuelDocument->MultiCell(0, 10, $row['date_to'], 0, 'L');
-    
+
             // Fuel Type
             $fuelDocument->SetFont('Times', '', 10);
             $fuelDocument->Cell(95, 10, 'Type of Fuel: ', 0, 0, 'L');
             $fuelDocument->SetFont('Times', 'B', 10);
             $fuelDocument->MultiCell(0, 10, $row['fuel_type'], 0, 'L');
-    
+
             // Requested & Received Fuel
             $fuelDocument->SetFont('Times', '', 10);
             $fuelDocument->Cell(95, 10, 'Requested Fuel: ', 0, 0, 'L');
             $fuelDocument->SetFont('Times', 'B', 10);
             $fuelDocument->MultiCell(0, 10, $row['requested_qty'] . ' Liters', 0, 'L');
-    
+
             $fuelDocument->SetFont('Times', '', 10);
             $fuelDocument->Cell(95, 10, 'Received Fuel: ', 0, 0, 'L');
             $fuelDocument->SetFont('Times', 'B', 10);
             $fuelDocument->MultiCell(0, 10, $row['received_qty'] . ' Liters', 0, 'L');
-    
+
             // Final Section
             $fuelDocument->Ln(20);
             $fuelDocument->Cell(95, 10, 'Prepared by: ', 0, 0, 'L');
             $fuelDocument->Cell(95, 10, 'Approved by: ', 0, 1, 'L');
-    
+
             $fuelDocument->Cell(95, 10, $row['verified_by'], 0, 0, 'L');
             $fuelDocument->Cell(95, 10, $row['approved_by'], 0, 1, 'L');
-    
+
             $fuelDocument->Cell(95, 10, 'H/LOGISTIC APTC', 0, 0, 'L');
             $fuelDocument->Cell(95, 10, 'D/CEO & DAF APTC', 0, 1, 'L');
         } else {
             echo 'No Request found';
         }
     }
-    
+
     // Output the PDF as a download
     header('Content-Type: application/pdf');
     header('Content-Disposition: inline; filename="Fuel Report.pdf"');
@@ -154,18 +154,17 @@ if (isset($_GET['req_id'])) {
 }
 
 // APPROVE REQUEST ON BEHALF OG LOGISTICS
-if(isset($_GET['verify'])) {
+if (isset($_GET['verify'])) {
     $req_id = $_GET['verify'];
     $verifier = $_SESSION['name'];
 
     $query = 'UPDATE fuel_request SET verified_by = ? WHERE req_id = ?';
     $stmt = $db->prepare($query);
-    $stmt->bind_param('si', $verifier,$req_id);
-    if($stmt->execute()){
+    $stmt->bind_param('si', $verifier, $req_id);
+    if ($stmt->execute()) {
         echo json_encode(['message' => 'Request Verifiyed']);
-    }else{
+    } else {
         echo json_encode(['message' => 'Request not Verifiyed']);
-
     }
     exit;
 }
@@ -176,28 +175,28 @@ CANCELING REQUEST on BEHALF OF LOGISTICS
 AND ON BEHAKF OF CEO or D/CEO
 
 */
-if(isset($_GET['reject']) || isset($_GET['cancel'])) {
-    $req_id = isset($_GET['reject']) ? $_GET['reject'] : $_GET['cancel'] ;
+if (isset($_GET['reject']) || isset($_GET['cancel'])) {
+    $req_id = isset($_GET['reject']) ? $_GET['reject'] : $_GET['cancel'];
     $status = 'rejected';
     $query = 'UPDATE fuel_request SET status = ? WHERE req_id = ?';
     $stmt = $db->prepare($query);
     $stmt->bind_param('si', $status, $req_id);
 
-    if(isset($_GET['cancel'])){
-        ?>
+    if (isset($_GET['cancel'])) {
+?>
         <script>
             alert("Request Rejected")
-            location='./requests.php'
+            location = './requests.php'
         </script>
 
-        <?php
+<?php
         return;
     }
 
-    if($stmt -> execute()){
-        echo json_encode(['message'=> 'Request rejected']);
-    }else{
-        echo json_encode(['message'=> 'Request failed to reject']);
+    if ($stmt->execute()) {
+        echo json_encode(['message' => 'Request rejected']);
+    } else {
+        echo json_encode(['message' => 'Request failed to reject']);
     }
 }
 
@@ -205,138 +204,152 @@ if(isset($_GET['reject']) || isset($_GET['cancel'])) {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Requests</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-gray-100">
     <div class="flex h-screen">
-        <?php include ("./components/side.php"); ?>
-        
+        <?php include("./components/side.php"); ?>
+
         <div class="flex-1 p-6">
             <!-- Top Bar -->
             <div class="flex justify-between items-center bg-white p-4 rounded shadow-md">
-                <h1 class="text-xl font-semibold text-lime-700">Dashboard</h1>
+                <h1 class="text-xl font-semibold text-lime-700"><i class="fa-solid fa-home"></i> Dashboard</h1>
                 <div class="flex items-center space-x-4">
-                    <span class="text-gray-600">Welcome, <?php echo "<b>".$_SESSION["name"]. "</b>"; ?></span>
-                    <?php echo (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO') ? 
-                    "" : '<a href="./index.php" class="bg-lime-700 text-white p-1 rounded-md" alt="Send Request"> New Request </a>'; ?>
+                    <span class="text-gray-600">Welcome, <?php echo "<b>" . $_SESSION["name"] . "</b>"; ?></span>
+                    <?php echo (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO') ?
+                        "" : '<a href="./index.php" class="bg-lime-700 text-white p-1 rounded-md" alt="Send Request"> New Request </a>'; ?>
                 </div>
             </div>
 
             <!-- Status Filter Links -->
             <div class="mt-4 flex space-x-4">
-               <a href="requests.php?status=approved" class="<?php echo (isset($_GET['status']) && $_GET['status'] === 'approved') ? 'border-t-4 border-zinc-900 px-4 py-2 bg-lime-700 text-white rounded-md' : 'px-4 py-2 bg-lime-700 text-white rounded-md'; ?>">Approved</a>
-                <a href="requests.php?status=pending" class="<?php echo (isset($_GET['status']) && $_GET['status'] === 'pending') ? 'border-t-4 border-zinc-900 px-4 py-2 bg-yellow-500 text-white rounded-md' :'px-4 py-2 bg-yellow-500 text-white rounded-md' ?>">Pending</a>
-                <a href="requests.php?status=rejected" class="<?php echo (isset($_GET['status']) && $_GET['status'] === 'rejected') ? 'border-t-4 border-zinc-900 px-4 py-2 bg-red-500 text-white rounded-md' : 'px-4 py-2 bg-red-500 text-white rounded-md' ?>">Canceled</a>
+                <a href="requests.php?status=approved" class="<?php echo (isset($_GET['status']) && $_GET['status'] === 'approved') ? 'border-t-4 border-zinc-900 px-2 py-1 bg-lime-700 text-white rounded-md' : 'px-2 py-1 bg-lime-700 text-white rounded-md'; ?>"><i class="fa-solid fa-check-circle text-green-500"></i> Approved</a>
+                <a href="requests.php?status=pending" class="<?php echo (isset($_GET['status']) && $_GET['status'] === 'pending') ? 'border-t-4 border-zinc-900 px-2 py-1 bg-yellow-500 text-white rounded-md' : 'px-2 py-1 bg-yellow-500 text-white rounded-md' ?>"><i class="fa-solid fa-hourglass-half text-pink-900"></i> Pending</a>
+                <a href="requests.php?status=rejected" class="<?php echo (isset($_GET['status']) && $_GET['status'] === 'rejected') ? 'border-t-4 border-zinc-900 px-2 py-1 bg-red-500 text-white rounded-md' : 'px-2 py-1 bg-red-500 text-white rounded-md' ?>"><i class="fa-solid fa-times-circle text-red-900"></i> Canceled</a>
             </div>
 
             <?php
-// Fetch status from URL
-$status = isset($_GET['status']) ? $_GET['status'] : 'all';
-$id = $_SESSION['staff_code'];
+            // Fetch status from URL
+            $status = isset($_GET['status']) ? $_GET['status'] : 'all';
+            $id = $_SESSION['staff_code'];
 
-// Pagination settings
-$itemsPerPage = 10;
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$offset = ($page - 1) * $itemsPerPage;
+            // Pagination settings
+            $itemsPerPage = 10;
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $offset = ($page - 1) * $itemsPerPage;
 
-// SQL query based on status
-if ($status === 'all') {
-    $query = (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO' || strtolower($_SESSION['role']) == 'logistics') ? 
-        "SELECT * FROM fuel_request LIMIT ? OFFSET ?" : 
-        "SELECT * FROM fuel_request WHERE stf_code = ? LIMIT ? OFFSET ?";
-} else {
-    $query = (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO' || strtolower($_SESSION['role']) == 'logistics') ? 
-        "SELECT * FROM fuel_request WHERE status = ? LIMIT ? OFFSET ?" :
-        "SELECT * FROM fuel_request WHERE status = ? AND stf_code = ? LIMIT ? OFFSET ?";
-}
+            // SQL query based on status
+            if ($status === 'all') {
+                $query = (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO' || strtolower($_SESSION['role']) == 'logistics') ?
+                    "SELECT * FROM fuel_request ORDER BY created_at DESC LIMIT ? OFFSET ?" :
+                    "SELECT * FROM fuel_request WHERE stf_code = ? ORDER BY created_at DESC LIMIT ? OFFSET ?";
+            } else {
+                $query = (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO' || strtolower($_SESSION['role']) == 'logistics') ?
+                    "SELECT * FROM fuel_request WHERE status = ? ORDER BY created_at DESC LIMIT ? OFFSET ?" :
+                    "SELECT * FROM fuel_request WHERE status = ? AND stf_code = ? ORDER BY created_at DESC LIMIT ? OFFSET ?";
+            }
 
-// Prepare and execute the query
-if ($stmt = $db->prepare($query)) {
-    if ($status === 'all') {
-        if (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO' || strtolower($_SESSION['role']) == 'logistics') {
-            $stmt->bind_param('ii', $itemsPerPage, $offset);
-        } else {
-            $stmt->bind_param('iii', $id, $itemsPerPage, $offset);
-        }
-    } else {
-        if (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO' || strtolower($_SESSION['role']) == 'logistics') {
-            $stmt->bind_param('sii', $status, $itemsPerPage, $offset);
-        } else {
-            $stmt->bind_param('siii', $status, $id, $itemsPerPage, $offset);
-        }
-    }
-    $stmt->execute();
-    $result = $stmt->get_result();
-}
+            // Prepare and execute the query
+            if ($stmt = $db->prepare($query)) {
+                if ($status === 'all') {
+                    if (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO' || strtolower($_SESSION['role']) == 'logistics') {
+                        $stmt->bind_param('ii', $itemsPerPage, $offset);
+                    } else {
+                        $stmt->bind_param('iii', $id, $itemsPerPage, $offset);
+                    }
+                } else {
+                    if (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO' || strtolower($_SESSION['role']) == 'logistics') {
+                        $stmt->bind_param('sii', $status, $itemsPerPage, $offset);
+                    } else {
+                        $stmt->bind_param('siii', $status, $id, $itemsPerPage, $offset);
+                    }
+                }
+                $stmt->execute();
+                $result = $stmt->get_result();
+            }
 
-// Fetch total number of records
-$countQuery = ($status === 'all') ? "SELECT COUNT(*) as total FROM fuel_request" : "SELECT COUNT(*) as total FROM fuel_request WHERE status = ?";
-$countStmt = $db->prepare($countQuery);
-if ($status !== 'all') {
-    $countStmt->bind_param('s', $status);
-}
-$countStmt->execute();
-$countResult = $countStmt->get_result();
-$totalRecords = $countResult->fetch_assoc()['total'];
-$totalPages = ceil($totalRecords / $itemsPerPage);
+            // Fetch total number of records
+            $countQuery = ($status === 'all') ? "SELECT COUNT(*) as total FROM fuel_request" : "SELECT COUNT(*) as total FROM fuel_request WHERE status = ?";
+            $countStmt = $db->prepare($countQuery);
+            if ($status !== 'all') {
+                $countStmt->bind_param('s', $status);
+            }
+            $countStmt->execute();
+            $countResult = $countStmt->get_result();
+            $totalRecords = $countResult->fetch_assoc()['total'];
+            $totalPages = ceil($totalRecords / $itemsPerPage);
 
-// Render the HTML table
-echo '<table class="w-full mt-4 border-collapse border border-gray-300 text-left text-gray-700">';
-echo '<thead class="bg-lime-700 text-white">';
-echo '<tr>';
-echo '<th class="p-2 border text-[12px]">Mission Header</th>';
-echo '<th class="p-2 border text-[12px]">Mission Driver</th>';
-echo '<th class="p-2 border text-[12px]">Destination</th>';
-echo '<th class="p-2 border text-[12px]">Date to go</th>';
-echo '<th class="p-2 border text-[12px]">Fuel Requested</th>';
+            // Render the HTML table with overflow-x-scroll
+            echo '<div class="w-full overflow-x-scroll mt-4">'; // Wrap the table with a div that enables scrolling
+            echo '<table class="w-full border-collapse border border-black text-left text-gray-700">';
+            echo '<thead class="bg-lime-700 text-white">';
+            echo '<tr>';
+            echo '<th class="p-2 border text-[12px]">Mission Header</th>';
+            echo '<th class="p-2 border text-[12px]">Mission Driver</th>';
+            echo '<th class="p-2 border text-[12px]">Destination</th>';
+            echo '<th class="p-2 border text-[12px]">Date to go</th>';
+            echo '<th class="p-2 border text-[12px]">Fuel Requested</th>';
 
-if (strtoupper($_SESSION['role']) === 'D/CEO' || strtoupper($_SESSION['role']) === 'CEO') {
-    echo '<th class="p-2 border text-[12px]">Actions</th>';
-}
-if (strtolower($_SESSION['role']) === 'logistics') {
-    echo '<th class="p-2 border text-[12px]">View</th>';
-}
+            if (strtoupper($_SESSION['role']) === 'D/CEO' || strtoupper($_SESSION['role']) === 'CEO') {
+                echo '<th class="p-2 border text-[12px]">Actions</th>';
+            }
+            if (strtolower($_SESSION['role']) === 'logistics') {
+                echo '<th class="p-2 border text-[12px]">View</th>';
+            }
 
-echo '</tr></thead><tbody class="bg-white">';
+            echo '</tr></thead><tbody class="bg-white">';
 
-while ($row = $result->fetch_assoc()) {
-    echo '<tr class="border-b bg-lime-900 hover:bg-lime-800">';
-    echo '<td class="text-[12px] border pl-2 text-lime-100">' . htmlspecialchars($row['head_mission']) . '</td>';
-    echo '<td class="text-[12px] border pl-2 text-lime-100">' . htmlspecialchars($row['driver_name']) . '</td>';
-    echo '<td class="text-[12px] border pl-2 text-lime-100">' . htmlspecialchars($row['location_to']) . '</td>';
-    echo '<td class="text-[12px] border pl-2 text-lime-100">' . htmlspecialchars($row['date_from']) . '</td>';
-    echo '<td class="text-[12px] border pl-2 text-lime-100">' . htmlspecialchars($row['fuel_type']) . '</td>';
+            while ($row = $result->fetch_assoc()) {
+                echo '<tr class="border border-b border-black bg-zinc-200 hover:bg-zinc-300">';
+                echo '<td class="text-[12px] border pl-2 text-black">' . htmlspecialchars($row['head_mission']) . '</td>';
+                echo '<td class="text-[12px] border pl-2 text-black">' . htmlspecialchars($row['driver_name']) . '</td>';
+                echo '<td class="text-[12px] border pl-2 text-black">' . htmlspecialchars($row['location_to']) . '</td>';
+                echo '<td class="text-[12px] border pl-2 text-black">' . htmlspecialchars($row['date_from']) . '</td>';
+                echo '<td class="text-[12px] border pl-2 text-black">' . htmlspecialchars($row['fuel_type']) . '</td>';
 
-    if (strtoupper($_SESSION['role']) === 'D/CEO' || strtoupper($_SESSION['role']) === 'CEO') {
-        echo '<td class="p-1 border"><a href="requests.php?cancel=' . urlencode($row['req_id']) . '" class="text-red-500 hover:underline">Cancel</a>';
-        if ($row['status'] === 'approved') {
-            echo '<span class="text-green-500 font-bold ml-2">Approved</span>';
-        } else {
-            echo '<a href="approve.php?approve=' . urlencode($row['req_id']) . '" class="text-green-500 hover:underline ml-2">Approve</a>';
-        }
-        echo '</td>';
-    }
+                if (strtoupper($_SESSION['role']) === 'D/CEO' || strtoupper($_SESSION['role']) === 'CEO') {
+                    echo '<td class="p-1 border">';
+                    if ($row['status'] === 'approved') {
+                        echo '<span class="text-green-500 font-bold ml-2 cursor-not-allowed">Approved</span>';
+                    } else if ($row['status'] === 'rejected') {
+                        echo '<span class="font-bold ml-2 text-red-500 cursor-not-allowed">Rejected</span>';
+                    } else if ($row['status'] === 'pending') {
+                        echo '<a href="requests.php?cancel=' . urlencode($row['req_id']) . '" class="text-red-500 hover:underline">Pending</a>';
+                    } else {
+                        echo '<a href="requests.php?cancel=' . urlencode($row['req_id']) . '" class="text-red-500 hover:underline">Reject</a>';
+                    }
 
-    if (strtolower($_SESSION['role']) === 'logistics') {
-        echo '<td class="p-3 border"><button onclick="viewRequest(' . $row['req_id'] . ')" class="text-blue-500 hover:underline">View</button></td>';
-    }
+                    if ($row['status'] === 'approved') {
+                        echo '<a href="?id=' . urlencode($row['req_id']) . '" class="text-blue-500 hover:underline ml-2">Download PDF</a>';
+                    } else {
+                        echo '<span class="text-gray-400 ml-2 cursor-not-allowed">Download PDF</span>';
+                    }
+                    echo '</td>';
+                }
 
-    echo '</tr>';
-}
+                if (strtolower($_SESSION['role']) === 'logistics') {
+                    echo '<td class="p-3 border"><button onclick="viewRequest(' . $row['req_id'] . ')" class="text-blue-500 hover:underline">View</button></td>';
+                }
 
-echo '</tbody></table>';
+                echo '</tr>';
+            }
 
-// Pagination controls
-echo '<div class="mt-4">';
-for ($i = 1; $i <= $totalPages; $i++) {
-    echo '<a href="?page=' . $i . '&status=' . $status . '" class="px-3 py-1 mx-1 border rounded ' . ($page == $i ? 'bg-lime-700 text-white' : 'bg-white text-lime-700') . '">' . $i . '</a>';
-}
-echo '</div>';
-?>
+            echo '</tbody></table> </div>'; // Close the table and the div
+
+
+            // Pagination controls
+            echo '<div class="mt-4">';
+            for ($i = 1; $i <= $totalPages; $i++) {
+                echo '<a href="?page=' . $i . '&status=' . $status . '" class="px-3 py-1 mx-1 border rounded ' . ($page == $i ? 'bg-lime-700 text-white' : 'bg-white text-lime-700') . '">' . $i . '</a>';
+            }
+            echo '</div>';
+            ?>
 
 
             <!-- Modal -->
@@ -356,8 +369,8 @@ echo '</div>';
             fetch(`requests.php?req_id=${id}`)
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById("requestDetails").innerHTML = 
-                    `<b>Satatus:</b> <span class='text-blue-800 capitalize p-x-2 font-light rounded-md text-center'>${data.status}</span><br>
+                    document.getElementById("requestDetails").innerHTML =
+                        `<b>Satatus:</b> <span class='text-blue-800 capitalize p-x-2 font-light rounded-md text-center'>${data.status}</span><br>
                         <b>Mission:</b> ${data.head_mission}<br>
                          <b>Driver:</b> ${data.driver_name}<br>
                          <b>Vehicle:</b> ${data.vehicle_type}<br>
@@ -384,17 +397,18 @@ echo '</div>';
 
         function verifyRequest(id) {
             fetch(`requests.php?verify=${id}`)
-            .then(response => response.json())
-            .then(data => alert(data.message))
+                .then(response => response.json())
+                .then(data => alert(data.message))
             closeModal();
         }
 
         function cancelRequest(id) {
             fetch(`requests.php?reject=${id}`)
-            .then(response => response.json())
-            .then(data => alert(data.message))
+                .then(response => response.json())
+                .then(data => alert(data.message))
             closeModal();
         }
     </script>
 </body>
+
 </html>
