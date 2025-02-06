@@ -201,7 +201,6 @@ if(isset($_GET['reject']) || isset($_GET['cancel'])) {
     }
 }
 
-
 ?>
 
 <!DOCTYPE html>
@@ -235,84 +234,110 @@ if(isset($_GET['reject']) || isset($_GET['cancel'])) {
             </div>
 
             <?php
-            // Fetch status from URL
-            $status = isset($_GET['status']) ? $_GET['status'] : 'all';
-            $id = $_SESSION['staff_code'] ;
+// Fetch status from URL
+$status = isset($_GET['status']) ? $_GET['status'] : 'all';
+$id = $_SESSION['staff_code'];
 
-            // SQL query based on status
-            if ($status === 'all') {
-                $query = (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO' || strtolower($_SESSION['role']) == 'logistics') ? "SELECT * FROM fuel_request" : "SELECT * FROM fuel_request WHERE stf_code = '$id'"; // Show all records
-            } else {
-                $query = (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO' || strtolower($_SESSION['role']) == 'logistics') ? "SELECT * FROM fuel_request WHERE status = ?":"SELECT * FROM fuel_request WHERE status = ? AND stf_code = ?";
-            }
+// Pagination settings
+$itemsPerPage = 10;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $itemsPerPage;
 
-            // Prepare and execute the query
-            if ($stmt = $db->prepare($query)) {
-                if ($status !== 'all') {
-                    if ((strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO' || strtolower($_SESSION['role']) == 'logistics')){
-                $stmt->bind_param('s', $status);
-                    }
-                    else{
-                        $stmt->bind_param('si',$status, $id);
-                    }
-                }
-                $stmt->execute();
-                $result = $stmt->get_result();
-            }
+// SQL query based on status
+if ($status === 'all') {
+    $query = (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO' || strtolower($_SESSION['role']) == 'logistics') ? 
+        "SELECT * FROM fuel_request LIMIT ? OFFSET ?" : 
+        "SELECT * FROM fuel_request WHERE stf_code = ? LIMIT ? OFFSET ?";
+} else {
+    $query = (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO' || strtolower($_SESSION['role']) == 'logistics') ? 
+        "SELECT * FROM fuel_request WHERE status = ? LIMIT ? OFFSET ?" :
+        "SELECT * FROM fuel_request WHERE status = ? AND stf_code = ? LIMIT ? OFFSET ?";
+}
 
-            // Render the HTML table
-            echo '<table class="w-full mt-4 border-collapse border border-gray-300 text-left text-gray-700">
-                <thead class="bg-lime-700 text-white">
-                    <tr>
-                        <th class="p-3 border text-[12px]">Mission Header</th>
-                        <th class="p-3 border text-[12px]">Mission Driver</th>
-                        <th class="p-3 border text-[12px]">Destination</th>
-                        <th class="p-3 border text-[12px]">Date to go</th>
-                        <th class="p-3 border text-[12px]">Fuel Requested</th>';
-                        
-            echo (strtoupper($_SESSION['role']) === 'D/CEO' || strtoupper($_SESSION['role']) === 'CEO') ? '<th class="p-3 border text-[12px]">Actions</th>' : '';
-            echo (strtolower($_SESSION['role']) === 'logistics') ? '<th class="p-3 border text-[12px]">View</th>' : '';
+// Prepare and execute the query
+if ($stmt = $db->prepare($query)) {
+    if ($status === 'all') {
+        if (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO' || strtolower($_SESSION['role']) == 'logistics') {
+            $stmt->bind_param('ii', $itemsPerPage, $offset);
+        } else {
+            $stmt->bind_param('iii', $id, $itemsPerPage, $offset);
+        }
+    } else {
+        if (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO' || strtolower($_SESSION['role']) == 'logistics') {
+            $stmt->bind_param('sii', $status, $itemsPerPage, $offset);
+        } else {
+            $stmt->bind_param('siii', $status, $id, $itemsPerPage, $offset);
+        }
+    }
+    $stmt->execute();
+    $result = $stmt->get_result();
+}
 
-            echo '</tr></thead><tbody class="bg-white">';
+// Fetch total number of records
+$countQuery = ($status === 'all') ? "SELECT COUNT(*) as total FROM fuel_request" : "SELECT COUNT(*) as total FROM fuel_request WHERE status = ?";
+$countStmt = $db->prepare($countQuery);
+if ($status !== 'all') {
+    $countStmt->bind_param('s', $status);
+}
+$countStmt->execute();
+$countResult = $countStmt->get_result();
+$totalRecords = $countResult->fetch_assoc()['total'];
+$totalPages = ceil($totalRecords / $itemsPerPage);
 
-            while ($row = $result->fetch_assoc()) {
-                echo '<tr class="border-b bg-lime-900 hover:bg-lime-800">
-                    <td class="text-[12px] border text-lime-100">' . htmlspecialchars($row['head_mission']) . '</td>
-                    <td class="text-[12px] border text-lime-100">' . htmlspecialchars($row['driver_name']) . '</td>
-                    <td class="text-[12px] border text-lime-100">' . htmlspecialchars($row['location_to']) . '</td>
-                    <td class="text-[12px] border text-lime-100">' . htmlspecialchars($row['date_from']) . '</td>
-                    <td class="text-[12px] border text-lime-100">' . htmlspecialchars($row['fuel_type']) . '</td>';
-            
-                if (strtoupper($_SESSION['role']) === 'D/CEO' || strtoupper($_SESSION['role']) === 'CEO') {
-                    echo '<td class="p-1 border">
-                        <a href="requests.php?cancel=' . urlencode($row['req_id']) . '" class="text-red-500 hover:underline">Cancel</a>';
+// Render the HTML table
+echo '<table class="w-full mt-4 border-collapse border border-gray-300 text-left text-gray-700">';
+echo '<thead class="bg-lime-700 text-white">';
+echo '<tr>';
+echo '<th class="p-2 border text-[12px]">Mission Header</th>';
+echo '<th class="p-2 border text-[12px]">Mission Driver</th>';
+echo '<th class="p-2 border text-[12px]">Destination</th>';
+echo '<th class="p-2 border text-[12px]">Date to go</th>';
+echo '<th class="p-2 border text-[12px]">Fuel Requested</th>';
 
-                    if ($row['status'] === 'approved') {
-                        echo '<span class="text-green-500 font-bold ml-2">Approved</span>';
-                    } else {
-                        echo '<a href="approve.php?approve=' . urlencode($row['req_id']) . '" class="text-green-500 hover:underline ml-2">Approve</a>';
-                    }
+if (strtoupper($_SESSION['role']) === 'D/CEO' || strtoupper($_SESSION['role']) === 'CEO') {
+    echo '<th class="p-2 border text-[12px]">Actions</th>';
+}
+if (strtolower($_SESSION['role']) === 'logistics') {
+    echo '<th class="p-2 border text-[12px]">View</th>';
+}
 
-                    if ($row['status'] === 'approved') {
-                        echo '<a href="?id=' . urlencode($row['req_id']) . '" class="text-blue-500 hover:underline ml-2">Download PDF</a>';
-                    } else {
-                        echo '<span class="text-gray-400 ml-2 cursor-not-allowed">Download PDF</span>';
-                    }
+echo '</tr></thead><tbody class="bg-white">';
 
-                    echo '</td>';
-                }
+while ($row = $result->fetch_assoc()) {
+    echo '<tr class="border-b bg-lime-900 hover:bg-lime-800">';
+    echo '<td class="text-[12px] border pl-2 text-lime-100">' . htmlspecialchars($row['head_mission']) . '</td>';
+    echo '<td class="text-[12px] border pl-2 text-lime-100">' . htmlspecialchars($row['driver_name']) . '</td>';
+    echo '<td class="text-[12px] border pl-2 text-lime-100">' . htmlspecialchars($row['location_to']) . '</td>';
+    echo '<td class="text-[12px] border pl-2 text-lime-100">' . htmlspecialchars($row['date_from']) . '</td>';
+    echo '<td class="text-[12px] border pl-2 text-lime-100">' . htmlspecialchars($row['fuel_type']) . '</td>';
 
-                if (strtolower($_SESSION['role']) === 'logistics') {
-                    echo '<td class="p-3 border">
-                        <button onclick="viewRequest(' . $row['req_id'] . ')" class="text-blue-500 hover:underline">View</button>
-                    </td>';
-                }
+    if (strtoupper($_SESSION['role']) === 'D/CEO' || strtoupper($_SESSION['role']) === 'CEO') {
+        echo '<td class="p-1 border"><a href="requests.php?cancel=' . urlencode($row['req_id']) . '" class="text-red-500 hover:underline">Cancel</a>';
+        if ($row['status'] === 'approved') {
+            echo '<span class="text-green-500 font-bold ml-2">Approved</span>';
+        } else {
+            echo '<a href="approve.php?approve=' . urlencode($row['req_id']) . '" class="text-green-500 hover:underline ml-2">Approve</a>';
+        }
+        echo '</td>';
+    }
 
-                echo '</tr>';
-            }
+    if (strtolower($_SESSION['role']) === 'logistics') {
+        echo '<td class="p-3 border"><button onclick="viewRequest(' . $row['req_id'] . ')" class="text-blue-500 hover:underline">View</button></td>';
+    }
 
-            echo '</tbody></table>';
-            ?>
+    echo '</tr>';
+}
+
+echo '</tbody></table>';
+
+// Pagination controls
+echo '<div class="mt-4">';
+for ($i = 1; $i <= $totalPages; $i++) {
+    echo '<a href="?page=' . $i . '&status=' . $status . '" class="px-3 py-1 mx-1 border rounded ' . ($page == $i ? 'bg-lime-700 text-white' : 'bg-white text-lime-700') . '">' . $i . '</a>';
+}
+echo '</div>';
+?>
+
 
             <!-- Modal -->
             <div id="requestModal" class="fixed inset-0 hidden bg-black bg-opacity-50 flex justify-center items-center">
