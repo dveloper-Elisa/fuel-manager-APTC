@@ -56,9 +56,9 @@ if (isset($_POST['quick_request'])) {
         <div class="flex-1 p-6">
             <!-- Top Bar -->
             <div class="flex justify-between items-center bg-white p-4 rounded shadow-md">
-                <h1 class="text-xl font-semibold text-lime-700"><i class="fa-solid fa-home"></i> Dashboard</h1>
+                <h1 class="text-xl font-semibold text-lime-700 flex flex-row items-center gap-2"><i class="fa-solid fa-home"></i> <span class="lg:flex md:flex sm:flex hidden">Dashboard</span></h1>
                 <div class="flex items-center space-x-4">
-                    <span class="text-gray-600">Welcome, <?php echo "<b>" . $_SESSION["name"] . "</b>"; ?></span>
+                    <span class="text-gray-600"> <?php echo "<b>" . $_SESSION["name"] . "</b>"; ?></span>
                     <?php echo (strtoupper($_SESSION['role']) == 'LOGISTICS') ?
                         '<button id="showFormBtn" class="bg-lime-700 text-white py-2 px-4 rounded-lg hover:bg-lime-800 transition" alt="Send Quick"> Quick Act </button>' : ''; ?>
                 </div>
@@ -66,7 +66,7 @@ if (isset($_POST['quick_request'])) {
 
             <!-- DISPLAYING THE DATA FROM QUICK_ACTION IN CARDS AND ADD BUTTON FOR DOWNLOADING PDF -->
             <?php
-            $limit = 10;
+            $limit = 6;
             $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
             $offset = ($page - 1) * $limit;
 
@@ -113,17 +113,17 @@ if (isset($_POST['quick_request'])) {
             <!-- Pagination Controls -->
             <div class="flex justify-center space-x-2 mt-4">
                 <?php if ($page > 1) : ?>
-                    <a href="?page=<?php echo $page - 1; ?>" class="px-4 py-2 bg-lime-700 text-white rounded-lg hover:bg-lime-800">Previous</a>
+                    <a href="?page=<?php echo $page - 1; ?>" class="px-3 py-1 bg-gray-700 text-white rounded-md hover:bg-gray-500">⏮️</a>
                 <?php endif; ?>
 
                 <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
-                    <a href="?page=<?php echo $i; ?>" class="px-4 py-2 rounded-lg <?php echo $i == $page ? 'bg-lime-700 text-white' : 'bg-gray-200 hover:bg-gray-300'; ?>">
+                    <a href="?page=<?php echo $i; ?>" class="px-3 py-1 rounded-md <?php echo $i == $page ? 'bg-lime-700 text-white' : 'bg-gray-200 hover:bg-gray-300'; ?>">
                         <?php echo $i; ?>
                     </a>
                 <?php endfor; ?>
 
                 <?php if ($page < $totalPages) : ?>
-                    <a href="?page=<?php echo $page + 1; ?>" class="px-4 py-2 bg-lime-700 text-white rounded-lg hover:bg-lime-800">Next</a>
+                    <a href="?page=<?php echo $page + 1; ?>" class="px-3 py-1 bg-gray-700 text-white rounded-md hover:bg-gray-500">⏭️</a>
                 <?php endif; ?>
             </div>
 

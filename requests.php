@@ -219,9 +219,9 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
         <div class="flex-1 p-6">
             <!-- Top Bar -->
             <div class="flex justify-between items-center bg-white p-4 rounded shadow-md">
-                <h1 class="text-xl font-semibold text-lime-700"><i class="fa-solid fa-home"></i> Dashboard</h1>
+                <h1 class="text-xl font-semibold text-lime-700 flex flex-row items-center gap-2"><i class="fa-solid fa-home"></i> <span class="lg:flex md:flex sm:flex hidden">Dashboard</span></h1>
                 <div class="flex items-center space-x-4">
-                    <span class="text-gray-600">Welcome, <?php echo "<b>" . $_SESSION["name"] . "</b>"; ?></span>
+                    <span class="text-gray-600"> <?php echo "<b>" . $_SESSION["name"] . "</b>"; ?></span>
                     <?php echo (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO') ?
                         "" : '<a href="./index.php" class="bg-lime-700 text-white p-1 rounded-md" alt="Send Request"> New Request </a>'; ?>
                 </div>

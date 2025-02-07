@@ -48,7 +48,7 @@ include("./connection.php");
             <label for="quantinty">Quantity in Liters</label>
             <input type="number" placeholder="Fuel Quantity" name="quantinty" id="quantinty" required>
             <label for="signature">Head of Mission's Signature</label>
-            <input type="file" name="signature" id="signature" accept=".jpg, .jpeg, .png" required>
+            <input type="file" name="signature" id="signature" accept=".jpg, .jpeg, .png">
             <input type="submit" value="Submit" name="btn">
         </form>
 
