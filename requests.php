@@ -123,7 +123,7 @@ if (isset($_GET['id'])) {
     header('Content-Type: application/pdf');
     header('Content-Disposition: inline; filename="Fuel Report.pdf"');
     $fuelDocument->Output('D', 'Fuel Report.pdf');
-    exit; // End script execution to prevent further output
+    exit;
 }
 
 // Query to fetch fuel requests
@@ -286,7 +286,7 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
             $totalPages = ceil($totalRecords / $itemsPerPage);
 
             // Render the HTML table with overflow-x-scroll
-            echo '<div class="w-full overflow-x-scroll mt-4">'; // Wrap the table with a div that enables scrolling
+            echo '<div class="w-full overflow-x-scroll mt-4">';
             echo '<table class="w-full border-collapse border border-black text-left text-gray-700">';
             echo '<thead class="bg-lime-700 text-white">';
             echo '<tr>';
@@ -300,7 +300,7 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
                 echo '<th class="p-2 border text-[12px]">Actions</th>';
             }
             if (strtolower($_SESSION['role']) === 'logistics') {
-                echo '<th class="p-2 border text-[12px]">View</th>';
+                echo (isset($_GET['status']) && $_GET['status'] === 'rejected') ? '' : '<th class="p-2 border text-[12px]">Verify</th>';
             }
 
             echo '</tr></thead><tbody class="bg-white">';
@@ -320,7 +320,7 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
                     } else if ($row['status'] === 'rejected') {
                         echo '<span class="font-bold ml-2 text-red-500 cursor-not-allowed">Rejected</span>';
                     } else if ($row['status'] === 'pending') {
-                        echo '<a href="requests.php?cancel=' . urlencode($row['req_id']) . '" class="text-red-500 hover:underline">Pending</a>';
+                        echo '<a href="approve.php?approve=' . urlencode($row['req_id']) . '" class="text-red-500 hover:underline ml-2">Approve</a>';
                     } else {
                         echo '<a href="requests.php?cancel=' . urlencode($row['req_id']) . '" class="text-red-500 hover:underline">Reject</a>';
                     }
@@ -334,7 +334,19 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
                 }
 
                 if (strtolower($_SESSION['role']) === 'logistics') {
-                    echo '<td class="p-3 border"><button onclick="viewRequest(' . $row['req_id'] . ')" class="text-blue-500 hover:underline">View</button></td>';
+                    if (isset($_GET['status']) && $_GET['status'] === 'rejected') {
+                        echo '';
+                    } else {
+                        if ($row['verified_by'] == '-') {
+                            echo '<td class="p-3 border">
+                                    <button onclick="viewRequest(' . $row['req_id'] . ')" class="text-blue-500 hover:underline">
+                                        Verify
+                                    </button>
+                                  </td>';
+                        } else {
+                            echo '<td class="text-blue-800 p-3 border">Verified</td>';
+                        }
+                    }
                 }
 
                 echo '</tr>';

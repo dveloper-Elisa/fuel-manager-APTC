@@ -111,7 +111,7 @@ if (isset($_POST['quick_request'])) {
             </div>
 
             <!-- Pagination Controls -->
-            <div class="flex justify-center space-x-2 mt-4">
+            <div class="flex space-x-2 mt-4">
                 <?php if ($page > 1) : ?>
                     <a href="?page=<?php echo $page - 1; ?>" class="px-3 py-1 bg-gray-700 text-white rounded-md hover:bg-gray-500">⏮️</a>
                 <?php endif; ?>

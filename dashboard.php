@@ -110,9 +110,6 @@ $staff_code = $_SESSION["staff_code"];
                     </p>
                 </div>
 
-                <?php
-
-                ?>
             </div>
 
             <!-- Recent Requests Table -->

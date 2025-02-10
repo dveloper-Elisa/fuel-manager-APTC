@@ -34,6 +34,9 @@ include("./connection.php");
         <!-- <a href="./requests.php" target="_blank" rel="noopener noreferrer">View Requests</a> -->
         <form method="post" enctype="multipart/form-data" class="overflow-y-scroll">
             <h2>Fuel Request Management System</h2>
+            <div>
+                <p id="response" class="text-red-600"></p>
+            </div>
             <input type="text" placeholder="Head of mission" name="Hnames" id="headName" required>
             <input type="text" placeholder="Driver Name" name="Dnames" id="driverName" required>
             <input type="text" placeholder="Vehicle Type" name="Vtype" id="vehicleType" required>
@@ -51,8 +54,6 @@ include("./connection.php");
             <input type="file" name="signature" id="signature" accept=".jpg, .jpeg, .png">
             <input type="submit" value="Submit" name="btn">
         </form>
-
-        <div id="response"></div>
 
         <?php
         if (isset($_POST["btn"])) {
@@ -101,21 +102,42 @@ include("./connection.php");
                                     alert("request Sent sucessfull")
                                     window.location = "./requests.php";
                                 </script>
-        <?php
+                            <?php
                             } else {
-                                echo "Error: " . mysqli_error($db);
+                            ?>
+                                <script>
+                                    document.getElementById('response').innerText = 'Error'
+                                    <?php echo mysqli_error($db); ?>
+                                </script>
+                            <?php
                             }
                         } else {
-                            echo "Error uploading the file.";
+                            ?>
+                            <script>
+                                document.getElementById('response').innerText = "Error uploading Signature.";
+                            </script>
+                        <?php
                         }
                     } else {
-                        echo "File size exceeds the maximum limit of 2MB.";
+                        ?>
+                        <script>
+                            document.getElementById('response').innerText = "File size exceeds the maximum limit of 2MB.";
+                        </script>
+                    <?php
                     }
                 } else {
-                    echo "Invalid file type. Please upload a JPEG or PNG image.";
+                    ?>
+                    <script>
+                        document.getElementById('response').innerText = "Invalid file type. Please upload a JPEG or PNG image.";
+                    </script>
+                <?php
                 }
             } else {
-                echo "File not uploaded or there was an error.";
+                ?>
+                <script>
+                    document.getElementById('response').innerText = "File not uploaded or there was an error.";
+                </script>
+        <?php
             }
         }
         ?>
