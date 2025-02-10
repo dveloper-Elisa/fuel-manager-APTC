@@ -155,6 +155,9 @@ if (isset($_GET['req_id'])) {
 
 // APPROVE REQUEST ON BEHALF OG LOGISTICS
 if (isset($_GET['verify'])) {
+    if (isset($_POST['verifye'])) {
+        echo $_POST['received'];
+    }
     $req_id = $_GET['verify'];
     $verifier = $_SESSION['name'];
 
@@ -231,45 +234,70 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
             <div class="mt-4 flex space-x-4">
                 <a href="requests.php?status=approved" class="<?php echo (isset($_GET['status']) && $_GET['status'] === 'approved') ? 'border-t-4 border-zinc-900 px-2 py-1 bg-lime-700 text-white rounded-md' : 'px-2 py-1 bg-lime-700 text-white rounded-md'; ?>">✅ Approved</a>
                 <a href="requests.php?status=pending" class="<?php echo (isset($_GET['status']) && $_GET['status'] === 'pending') ? 'border-t-4 border-zinc-900 px-2 py-1 bg-yellow-600 text-white rounded-md' : 'px-2 py-1 bg-yellow-600 text-white rounded-md' ?>">⏳ Pending</a>
-                <a href="requests.php?status=rejected" class="<?php echo (isset($_GET['status']) && $_GET['status'] === 'rejected') ? 'border-t-4 border-zinc-900 px-2 py-1 bg-red-500 text-white rounded-md' : 'px-2 py-1 bg-red-700 text-white rounded-md' ?>">🚫 Canceled</a>
+                <a href="requests.php?status=rejected" class="<?php echo (isset($_GET['status']) && $_GET['status'] === 'rejected') ? 'border-t-4 border-zinc-900 px-2 py-1 bg-red-500 text-white rounded-md' : 'px-2 py-1 bg-red-700 text-white rounded-md' ?>">🚫 Rejected</a>
             </div>
-
             <?php
             // Fetch status from URL
             $status = isset($_GET['status']) ? $_GET['status'] : 'all';
             $id = $_SESSION['staff_code'];
+            $role = strtolower($_SESSION['role']);
 
             // Pagination settings
             $itemsPerPage = 10;
             $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
             $offset = ($page - 1) * $itemsPerPage;
 
-            // SQL query based on status
-            if ($status === 'all') {
-                $query = (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO' || strtolower($_SESSION['role']) == 'logistics') ?
-                    "SELECT * FROM fuel_request ORDER BY created_at DESC LIMIT ? OFFSET ?" :
-                    "SELECT * FROM fuel_request WHERE stf_code = ? ORDER BY created_at DESC LIMIT ? OFFSET ?";
+            // Default value for verified_by
+            $verify = '-';
+
+            // Prepare SQL query based on role and status
+            $query = '';
+
+            if ($role == 'd/ceo' || $role == 'ceo') {
+                // CEO/D/CEO
+                if ($status === 'all') {
+                    $query = "SELECT * FROM fuel_request WHERE verified_by != ? ORDER BY created_at DESC LIMIT ? OFFSET ?";
+                } else {
+                    $query = "SELECT * FROM fuel_request WHERE verified_by != ? AND status = ? ORDER BY created_at DESC LIMIT ? OFFSET ?";
+                }
+            } elseif ($role == 'logistics') {
+                // Logistics
+                if ($status === 'all') {
+                    $query = "SELECT * FROM fuel_request ORDER BY created_at DESC LIMIT ? OFFSET ?";
+                } else {
+                    $query = "SELECT * FROM fuel_request WHERE status = ? ORDER BY created_at DESC LIMIT ? OFFSET ?";
+                }
             } else {
-                $query = (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO' || strtolower($_SESSION['role']) == 'logistics') ?
-                    "SELECT * FROM fuel_request WHERE status = ? ORDER BY created_at DESC LIMIT ? OFFSET ?" :
-                    "SELECT * FROM fuel_request WHERE status = ? AND stf_code = ? ORDER BY created_at DESC LIMIT ? OFFSET ?";
+                // Other roles (fetch based on stf_code)
+                if ($status === 'all') {
+                    $query = "SELECT * FROM fuel_request WHERE stf_code = ? ORDER BY created_at DESC LIMIT ? OFFSET ?";
+                } else {
+                    $query = "SELECT * FROM fuel_request WHERE stf_code = ? AND status = ? ORDER BY created_at DESC LIMIT ? OFFSET ?";
+                }
             }
 
             // Prepare and execute the query
             if ($stmt = $db->prepare($query)) {
-                if ($status === 'all') {
-                    if (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO' || strtolower($_SESSION['role']) == 'logistics') {
+                if ($role == 'd/ceo' || $role == 'ceo') {
+                    if ($status === 'all') {
+                        $stmt->bind_param('sii', $verify, $itemsPerPage, $offset);
+                    } else {
+                        $stmt->bind_param('ssii', $verify, $status, $itemsPerPage, $offset);
+                    }
+                } elseif ($role == 'logistics') {
+                    if ($status === 'all') {
                         $stmt->bind_param('ii', $itemsPerPage, $offset);
                     } else {
-                        $stmt->bind_param('iii', $id, $itemsPerPage, $offset);
+                        $stmt->bind_param('sii', $status, $itemsPerPage, $offset);
                     }
                 } else {
-                    if (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO' || strtolower($_SESSION['role']) == 'logistics') {
-                        $stmt->bind_param('sii', $status, $itemsPerPage, $offset);
+                    if ($status === 'all') {
+                        $stmt->bind_param('iii', $id, $itemsPerPage, $offset);
                     } else {
-                        $stmt->bind_param('siii', $status, $id, $itemsPerPage, $offset);
+                        $stmt->bind_param('isii', $id, $status, $itemsPerPage, $offset);
                     }
                 }
+
                 $stmt->execute();
                 $result = $stmt->get_result();
             }
@@ -277,13 +305,17 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
             // Fetch total number of records
             $countQuery = ($status === 'all') ? "SELECT COUNT(*) as total FROM fuel_request" : "SELECT COUNT(*) as total FROM fuel_request WHERE status = ?";
             $countStmt = $db->prepare($countQuery);
+
             if ($status !== 'all') {
                 $countStmt->bind_param('s', $status);
             }
+
             $countStmt->execute();
             $countResult = $countStmt->get_result();
             $totalRecords = $countResult->fetch_assoc()['total'];
             $totalPages = ceil($totalRecords / $itemsPerPage);
+
+
 
             // Render the HTML table with overflow-x-scroll
             echo '<div class="w-full overflow-x-scroll mt-4">';
@@ -391,13 +423,17 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
                          <b>Destination:</b> ${data.location_to}<br>
                          <b>Departure:</b> ${data.date_from}<br>
                          <b>Return:</b> ${data.date_to}<br>
-                         <b>Requested Fuel:</b> ${data.requested_qty} L <br>
                          <b>Fuel:</b> ${data.fuel_type}<br>
-                            <div class="mt-4 flex justify-between"> 
-                                <button onclick='verifyRequest(${data.req_id})' ${data.status.toLowerCase() === 'approved'? 'disabled' : ''} class="disable bg-green-500 text-white px-4 py-2 rounded">${data.status.toLowerCase() === 'approved'? 'Approved' : 'Verify'}</button>
+                         <b>Requested Fuel:</b> ${data.requested_qty} L <br>
+                         <form method='post'>
+                         <input type='number' min=0 placeholder='Granted Quantity' name='received' class='w-full p-2 border border-black rounded mb-4'/>
+
+                         <div class="mt-4 flex justify-between"> 
+                                <button type ='submit' name='verifye' onclick='verifyRequest(${data.req_id})' ${data.status.toLowerCase() === 'approved'? 'disabled' : ''} class="disable bg-green-500 text-white px-4 py-2 rounded">${data.status.toLowerCase() === 'approved'? 'Approved' : 'Verify'}</button>
                                 <button onclick="cancelRequest(${data.req_id})" class="bg-red-500 text-white px-4 py-2 rounded">Cancel</button>
                                 <button onclick="closeModal(${data.req_id})" class="bg-gray-500 text-white px-4 py-2 rounded">X</button>
                             </div>
+                         </form>
                          `;
                     document.getElementById("requestModal").classList.remove("hidden");
                 });

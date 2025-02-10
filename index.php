@@ -35,9 +35,8 @@ include("./connection.php");
         <form method="post" enctype="multipart/form-data" class="overflow-y-scroll">
             <h2>Fuel Request Management System</h2>
             <div>
-                <p id="response" class="text-red-600"></p>
+                <p id="response" class="text-red-500"></p>
             </div>
-            <input type="text" placeholder="Head of mission" name="Hnames" id="headName" required>
             <input type="text" placeholder="Driver Name" name="Dnames" id="driverName" required>
             <input type="text" placeholder="Vehicle Type" name="Vtype" id="vehicleType" required>
             <input type="text" placeholder="Plate Number" name="Pnumber" id="plateNumber" required>
@@ -58,7 +57,7 @@ include("./connection.php");
         <?php
         if (isset($_POST["btn"])) {
             // Sanitize and escape inputs
-            $Hnames = mysqli_real_escape_string($db, $_POST["Hnames"]);
+            $Hnames = $_SESSION["name"];
             $Dnames = mysqli_real_escape_string($db, $_POST["Dnames"]);
             $Vtype = mysqli_real_escape_string($db, $_POST["Vtype"]);
             $Pnumber = mysqli_real_escape_string($db, $_POST["Pnumber"]);
@@ -98,6 +97,7 @@ include("./connection.php");
 
                             if (mysqli_query($db, $sql)) {
         ?>
+                                <!-- SENDING ALTER OF SUCCESS REQUEST -->
                                 <script>
                                     alert("request Sent sucessfull")
                                     window.location = "./requests.php";

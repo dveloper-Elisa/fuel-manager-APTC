@@ -5,7 +5,7 @@ ini_set("display_errors", 1);
 
 session_start();
 
-if ((!isset($_SESSION["phone"]) || !isset($_SESSION["name"])) && (strtoupper($_SESSION['role']) !== 'D/CEO' || strtoupper($_SESSION['role']) !== 'CEO')) {
+if ((!isset($_SESSION["phone"]) || !isset($_SESSION["name"])) && (strtoupper($_SESSION['role']) !== 'D/CEO' || strtoupper($_SESSION['role']) !== 'CEO' || strtoupper($_SESSION['role']) !== 'LOGISTICS')) {
     header("Location: login.php");
 }
 
