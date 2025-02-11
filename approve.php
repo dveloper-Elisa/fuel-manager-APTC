@@ -13,23 +13,95 @@ include("./connection.php");
 
 if (isset($_GET["approve"])) {
 
-    // HANDLE FORM SUBMISSION
-    if (isset($_POST['approve'])) {
-        $granted_quantinty = $_POST['received'];
+    // HANDLE FORM SUBMISSION FOR APPROVAL
+    if (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO') {
+        if (isset($_POST['approve'])) {
+            $granted_quantinty = $_POST['received'];
 
-        $id = $_GET["approve"];
-        $verified_by = $_SESSION['name'];
-        $approved_by = $_SESSION['name'];
+            $id = $_GET["approve"];
+            $approved_by = $_SESSION['name'];
 
-        $approve = mysqli_query($db, "UPDATE fuel_request SET received_qty = '$granted_quantinty', approved_by = '$approved_by', status = 'approved' WHERE req_id = '$id'");
+            $FuuelType = "SELECT * FROM  fuel_request WHERE req_id = ?";
+            $state = $db->prepare($FuuelType);
+            $state->bind_param("i", $id);
+            $state->execute();
+            $resqult = $state->get_result();
+            if ($row = $resqult->fetch_assoc()) {
+                $fuelType = $row["fuel_type"];
 
-        if ($approve) {
+
+                // GETING PRICE OF FUEL
+                $stmt = $db->prepare("SELECT uplt FROM fuel WHERE type = ? AND status = 'active'");
+                $stmt->bind_param("s", $fuelType);
+                $stmt->execute();
+                $result = $stmt->get_result();
+
+                // Check if the price exists
+                if ($row = $result->fetch_assoc()) {
+                    $realPrice = $row["uplt"] * $granted_quantinty;
+                }
+
+
+                $approve = mysqli_query($db, "UPDATE fuel_request SET received_qty = '$granted_quantinty', price = '$realPrice', approved_by = '$approved_by', status = 'approved' WHERE req_id = '$id'");
+
+                // Close statement
+                $stmt->close();
+
+                if ($approve) {
 ?>
-            <script>
-                alert("Request Approved Successfully")
-                window.location = "./requests.php"
-            </script>
+                    <script>
+                        alert("Request Approved Successfully")
+                        window.location = "./requests.php"
+                    </script>
+                <?php
+                }
+            }
+        }
+    }
+    if (strtoupper($_SESSION['role']) == 'LOGISTICS') {
+        if (isset($_POST['verify'])) {
+            $granted_quantinty = $_POST['received'];
+
+            $id = $_GET["approve"];
+            $verified_by = $_SESSION['name'];
+
+            // GETING FUEL TYPE FROM fuel_request
+            $FuuelType = "SELECT * FROM  fuel_request WHERE req_id = ?";
+            $state = $db->prepare($FuuelType);
+            $state->bind_param("i", $id);
+            $state->execute();
+            $resqult = $state->get_result();
+            if ($row = $resqult->fetch_assoc()) {
+                $fuelType = $row["fuel_type"];
+
+
+                // GETING PRICE OF FUEL
+                $stmt = $db->prepare("SELECT uplt FROM fuel WHERE type = ? AND status = 'active'");
+                $stmt->bind_param("s", $fuelType);
+                $stmt->execute();
+                $result = $stmt->get_result();
+
+                // Check if the price exists
+                if ($row = $result->fetch_assoc()) {
+                    $realPrice = $row["uplt"] * $granted_quantinty;
+                }
+
+
+                $approve = mysqli_query($db, "UPDATE fuel_request SET received_qty = '$granted_quantinty', price = '$realPrice', verified_by = '$verified_by' WHERE req_id = '$id'");
+
+                // Close statement
+                $stmt->close();
+                if ($approve) {
+                ?>
+                    <script>
+                        setTimeout(() => {
+                            document.getElementById('verify').innerHTML = 'Request verified Successfully'
+                        }, 2000)
+                        window.location = "./requests.php"
+                    </script>
     <?php
+                }
+            }
         }
     }
 
@@ -70,6 +142,7 @@ if (isset($_GET["approve"])) {
                     $id = $_GET["approve"];
                     $sql = mysqli_fetch_array(mysqli_query($db, "SELECT * FROM fuel_request WHERE req_id = '$id' "));
                     ?>
+                    <div class="text-blue-500 p-2" id="verify"></div>
 
                     <label for="requested" class="block text-gray-700 font-semibold">Requested Quantity (L)</label>
                     <input type="number" name="" id="requested" value=<?php echo $sql['requested_qty'] ?> disabled class="w-full p-2 border border-black rounded mb-4">
@@ -77,7 +150,7 @@ if (isset($_GET["approve"])) {
                     <label for="received" class="block text-gray-700 font-semibold">Granted Quantity (L)</label>
                     <input type="number" name="received" id="received" placeholder="Quantity in Liters (L)" required class="w-full p-2 border border-black rounded mb-4">
 
-                    <button type="submit" name="approve" class="w-full bg-lime-700 text-white p-2 rounded hover:bg-lime-800">Approve</button>
+                    <?php echo (strtoupper($_SESSION['role']) == 'LOGISTICS') ? '<button type="submit" name="verify" class="w-full bg-lime-700 text-white p-2 rounded hover:bg-lime-800">Verify</button>' : (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO' ? '<button type="submit" name="approve" class="w-full bg-lime-700 text-white p-2 rounded hover:bg-lime-800">Approve</button>' : '') ?>
                 </form>
 
             <?php

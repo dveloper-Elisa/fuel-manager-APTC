@@ -20,7 +20,7 @@ include("./connection.php");
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fuel Request Management System</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="fuel.css">
+    <link rel="stylesheet" href="./fuel.css">
     <script src="https://cdn.tailwindcss.com"></script>
 
 </head>
@@ -46,7 +46,12 @@ include("./connection.php");
             <input type="date" name="departure" id="departure" required>
             <label for="return">Date of Return</label>
             <input type="date" name="return" id="return" required>
-            <input type="text" placeholder="Type of Fuel" name="fuel" id="fuel" required>
+            <label for="select">Fuel Type</label>
+            <select name="fuel" id="select" class="input-field text-sm sm:text-base" required>
+                <option value="" placeholder="Select Options">Select Options</option>
+                <option value="Diesel">Diesel</option>
+                <option value="Petrol">Petrol</option>
+            </select>
             <label for="quantinty">Quantity in Liters</label>
             <input type="number" placeholder="Fuel Quantity" name="quantinty" id="quantinty" required>
             <label for="signature">Head of Mission's Signature</label>
@@ -65,7 +70,7 @@ include("./connection.php");
             $Destination = mysqli_real_escape_string($db, $_POST["Destination"]);
             $departure = mysqli_real_escape_string($db, $_POST["departure"]);
             $return = mysqli_real_escape_string($db, $_POST["return"]);
-            $fuel = mysqli_real_escape_string($db, $_POST["fuel"]);
+            $fuelType = mysqli_real_escape_string($db, $_POST["fuel"]);
             $quantinty = mysqli_real_escape_string($db, $_POST["quantinty"]);
 
             // Handle file upload
@@ -90,58 +95,112 @@ include("./connection.php");
 
                         $staff_code = $_SESSION['staff_code'];
 
-                        if (move_uploaded_file($fileTmpName, $fileDestination)) {
-                            // Insert data into the database
-                            $sql = "INSERT INTO fuel_request (stf_code, requested_date, location_from, location_to, date_from, date_to, head_mission, vehicle_type, requested_qty, received_qty, driver_name, fuel_type, plate_number, verified_by, approved_by, `signature`, `status`, created_at ) 
-                    VALUES ('$staff_code',now(), '$from', '$Destination','$departure', '$return', '$Hnames', '$Vtype', '$quantinty', 0, '$Dnames', '$fuel', '$Pnumber', '-', '-', '$fileDestination', 'pending', now())";
+                        // GETING THE PRICE OF FUELS FROM DATABASE
+                        $sqlPrice = "SELECT uplt FROM fuel WHERE type = ? AND status = 'active'";
+                        $resultPrice = $db->prepare($sqlPrice);
+                        $resultPrice->bind_param("s", $fuelType);
+                        $resultPrice->execute();
+                        $result = $resultPrice->get_result();
+                        if ($row = $result->fetch_assoc()) {
+                            $realPrice = $row["uplt"] * $quantinty;
 
-                            if (mysqli_query($db, $sql)) {
+                            if (move_uploaded_file($fileTmpName, $fileDestination)) {
+                                // Insert data into the database
+                                $sql = "INSERT INTO fuel_request (stf_code, requested_date, location_from, location_to, date_from, date_to, head_mission, vehicle_type, requested_qty, received_qty, price, driver_name, fuel_type, plate_number, verified_by, approved_by, `signature`, `status`, created_at ) 
+                    VALUES ('$staff_code',now(), '$from', '$Destination','$departure', '$return', '$Hnames', '$Vtype', '$quantinty', 0, $realPrice, '$Dnames', '$fuelType', '$Pnumber', '-', '-', '$fileDestination', 'pending', now())";
+
+                                if (mysqli_query($db, $sql)) {
         ?>
-                                <!-- SENDING ALTER OF SUCCESS REQUEST -->
-                                <script>
-                                    alert("request Sent sucessfull")
-                                    window.location = "./requests.php";
-                                </script>
-                            <?php
+                                    <!-- SENDING ALTER OF SUCCESS REQUEST -->
+                                    <script>
+                                        alert("request Sent sucessfull")
+                                        window.location = "./requests.php";
+                                    </script>
+                                <?php
+                                } else {
+                                ?>
+                                    <script>
+                                        document.getElementById('response').innerText = 'Error'
+                                        <?php echo mysqli_error($db); ?>
+                                    </script>
+                                <?php
+                                }
                             } else {
-                            ?>
+                                ?>
                                 <script>
-                                    document.getElementById('response').innerText = 'Error'
-                                    <?php echo mysqli_error($db); ?>
+                                    document.getElementById('response').innerText = "Error uploading Signature.";
                                 </script>
                             <?php
                             }
                         } else {
                             ?>
                             <script>
-                                document.getElementById('response').innerText = "Error uploading Signature.";
+                                document.getElementById('response').innerText = "File size exceeds the maximum limit of 2MB.";
                             </script>
                         <?php
                         }
                     } else {
                         ?>
                         <script>
-                            document.getElementById('response').innerText = "File size exceeds the maximum limit of 2MB.";
+                            document.getElementById('response').innerText = "Invalid file type. Please upload a JPEG or PNG image.";
                         </script>
                     <?php
                     }
                 } else {
                     ?>
                     <script>
-                        document.getElementById('response').innerText = "Invalid file type. Please upload a JPEG or PNG image.";
+                        document.getElementById('response').innerText = "File not uploaded or there was an error.";
                     </script>
-                <?php
-                }
-            } else {
-                ?>
-                <script>
-                    document.getElementById('response').innerText = "File not uploaded or there was an error.";
-                </script>
         <?php
+                }
             }
         }
         ?>
     </div>
+
+
+    <style>
+        #select {
+            width: 100%;
+            padding: 12px;
+            margin: 6px 0;
+            border: 1px solid #2b2929;
+            border-radius: 5px;
+            font-size: 14px;
+            background-color: #fff;
+            color: #333;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* Add hover effect */
+        #select:hover {
+            border-color: #1e1e1e;
+        }
+
+        /* Add focus effect */
+        #select:focus {
+            border-color: #4caf50;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+        }
+
+        /* Style dropdown arrow */
+        #select::-ms-expand {
+            display: none;
+        }
+
+        #select {
+            appearance: none;
+            /* Remove default styling */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%232b2929' d='M2 0L0 2h4z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 8px;
+        }
+    </style>
 </body>
 
 </html>

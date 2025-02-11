@@ -27,7 +27,11 @@
                 <a href="./quick_request.php" class="block hover:bg-lime-600 rounded">
                     <span class="text-white text-lg">⚡</span>QuickAct 
                 </a>
-            </li>' : '';
+            </li> ' : (strtoupper($_SESSION['role'] === 'D/CEO') || strtoupper($_SESSION['role'] === 'CEO') ? '<li class="mb-2">
+                <a href="./quick_history.php" class="block hover:bg-lime-600 rounded">
+                    <span class="text-white text-lg">🔄</span>History 
+                </a>
+            </li>' : "");
             ?>
             <li class="mb-2">
                 <a href="./pannel/logout.php" class="block p-2 hover:bg-red-600 rounded">

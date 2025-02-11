@@ -104,6 +104,11 @@ if (isset($_GET['id'])) {
             $fuelDocument->SetFont('Times', 'B', 10);
             $fuelDocument->MultiCell(0, 10, $row['received_qty'] . ' Liters', 0, 'L');
 
+            $fuelDocument->SetFont('Times', '', 10);
+            $fuelDocument->Cell(95, 10, 'Price of Fuel: ', 0, 0, 'L');
+            $fuelDocument->SetFont('Times', 'B', 10);
+            $fuelDocument->MultiCell(0, 10, $row['price'] . ' RWF', 0, 'L');
+
             // Final Section
             $fuelDocument->Ln(20);
             $fuelDocument->Cell(95, 10, 'Prepared by: ', 0, 0, 'L');
@@ -153,24 +158,24 @@ if (isset($_GET['req_id'])) {
     exit;
 }
 
-// APPROVE REQUEST ON BEHALF OG LOGISTICS
-if (isset($_GET['verify'])) {
-    if (isset($_POST['verifye'])) {
-        echo $_POST['received'];
-    }
-    $req_id = $_GET['verify'];
-    $verifier = $_SESSION['name'];
+// APPROVE REQUEST ON BEHALF OF LOGISTICS TO VERIFY IS DESABLED AND SENT TO THE approve.php THEN IT DIFFER ACCORDING TO ROLES 
+// if (isset($_GET['verify'])) {
+//     if (isset($_POST['verifye'])) {
+//         echo $_POST['received'];
+//     }
+//     $req_id = $_GET['verify'];
+//     $verifier = $_SESSION['name'];
 
-    $query = 'UPDATE fuel_request SET verified_by = ? WHERE req_id = ?';
-    $stmt = $db->prepare($query);
-    $stmt->bind_param('si', $verifier, $req_id);
-    if ($stmt->execute()) {
-        echo json_encode(['message' => 'Request Verifiyed']);
-    } else {
-        echo json_encode(['message' => 'Request not Verifiyed']);
-    }
-    exit;
-}
+//     $query = 'UPDATE fuel_request SET verified_by = ? WHERE req_id = ?';
+//     $stmt = $db->prepare($query);
+//     $stmt->bind_param('si', $verifier, $req_id);
+//     if ($stmt->execute()) {
+//         echo json_encode(['message' => 'Request Verifiyed']);
+//     } else {
+//         echo json_encode(['message' => 'Request not Verifiyed']);
+//     }
+//     exit;
+// }
 
 /* 
 
@@ -425,15 +430,12 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
                          <b>Return:</b> ${data.date_to}<br>
                          <b>Fuel:</b> ${data.fuel_type}<br>
                          <b>Requested Fuel:</b> ${data.requested_qty} L <br>
-                         <form method='post'>
-                         <input type='number' min=0 placeholder='Granted Quantity' name='received' class='w-full p-2 border border-black rounded mb-4'/>
-
+                         <b>Fuel Price:</b> ${data.price} RWF<br>
                          <div class="mt-4 flex justify-between"> 
-                                <button type ='submit' name='verifye' onclick='verifyRequest(${data.req_id})' ${data.status.toLowerCase() === 'approved'? 'disabled' : ''} class="disable bg-green-500 text-white px-4 py-2 rounded">${data.status.toLowerCase() === 'approved'? 'Approved' : 'Verify'}</button>
+                                <a href='./approve.php?approve=${data.req_id}' ${data.status.toLowerCase() === 'approved'? 'disabled' : ''} class="disable bg-green-500 text-white px-4 py-2 rounded">${data.status.toLowerCase() === 'approved'? 'Approved' : 'Verify'}</a>
                                 <button onclick="cancelRequest(${data.req_id})" class="bg-red-500 text-white px-4 py-2 rounded">Cancel</button>
                                 <button onclick="closeModal(${data.req_id})" class="bg-gray-500 text-white px-4 py-2 rounded">X</button>
                             </div>
-                         </form>
                          `;
                     document.getElementById("requestModal").classList.remove("hidden");
                 });
@@ -443,12 +445,16 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
             document.getElementById("requestModal").classList.add("hidden");
         }
 
-        function verifyRequest(id) {
-            fetch(`requests.php?verify=${id}`)
-                .then(response => response.json())
-                .then(data => alert(data.message))
-            closeModal();
-        }
+        /**
+         * function for verifying request is remove and placed to approve.php the it differ according to their role LOGISTICS, CEO or D/CEO
+         */
+
+        // function verifyRequest(id) {
+        //     fetch(`requests.php?verify=${id}`)
+        //         .then(response => response.json())
+        //         .then(data => alert(data.message))
+        //     closeModal();
+        // }
 
         function cancelRequest(id) {
             fetch(`requests.php?reject=${id}`)

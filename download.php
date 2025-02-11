@@ -1,7 +1,7 @@
 <?php
 
 session_start();
-if (!isset($_SESSION["role"]) || strtoupper($_SESSION['role']) != 'LOGISTICS') {
+if (!isset($_SESSION["role"]) || strtoupper($_SESSION['role']) != 'LOGISTICS' && strtoupper($_SESSION['role']) != 'D/CEO' && strtoupper($_SESSION['role']) != 'CEO') {
     header('Location: login.php');
     exit();
 }
@@ -59,12 +59,13 @@ if (isset($_GET['pdf_id'])) {
     addDataRow($quickPdf, 'Driver:', $data['driver']);
     addDataRow($quickPdf, 'Plate Number:', $data['plate_no']);
     addDataRow($quickPdf, 'Liters of Fuel:', $data['fuel'] . 'L');
+    addDataRow($quickPdf, 'Total Price:', $data['price'] . ' RWF');
     addDataRow($quickPdf, 'From:', $data['origin']);
     addDataRow($quickPdf, 'To:', $data['destination']);
     addDataRow($quickPdf, 'Description:', $data['description'], true);
 
     $quickPdf->Ln(20);
-    $quickPdf->Cell(95, 10, 'Prepared by: ', 0, 0, 'L');
+    $quickPdf->Cell(95, 10, 'Issued by: ', 0, 0, 'L');
     $quickPdf->Cell(95, 10, 'Approved by: ', 0, 1, 'L');
 
     $quickPdf->Cell(95, 10, $data['prepared_by'], 0, 0, 'L');

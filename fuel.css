@@ -90,6 +90,7 @@ table tr:hover {
   input[type="email"],
   input[type="date"],
   input[type="file"],
+  #select,
   input[type="submit"] {
     font-size: 12px;
     padding: 8px;

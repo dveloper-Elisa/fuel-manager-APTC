@@ -1,6 +1,6 @@
 <?php
 session_start();
-if (!isset($_SESSION["role"]) || strtoupper($_SESSION["role"]) != 'LOGISTICS') {
+if (!isset($_SESSION["role"]) || strtoupper($_SESSION["role"]) != 'D/CEO' && strtoupper($_SESSION["role"]) != 'CEO') {
     header('Location: dashboard.php');
     exit();
 }
@@ -12,7 +12,6 @@ if (isset($_POST['quick_request'])) {
     $header = trim($_POST['header']);
     $driver = trim($_POST['driver']);
     $plate = strtoupper(trim($_POST['plate']));
-    $fueltype = trim($_POST['fueltype']);
     $fuel_littel = trim($_POST['fuel_littel']);
     $origin = trim($_POST['origin']);
     $destination = trim($_POST['destin']);
@@ -27,26 +26,9 @@ if (isset($_POST['quick_request'])) {
     }
 
     if (empty($errors)) {
-
-        // CALCULATING PRICE
-        $stmt = $db->prepare("SELECT uplt FROM fuel WHERE type = ? AND status = 'active'");
-        $stmt->bind_param("s", $fueltype);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        // Check if the price exists
-        if ($row = $result->fetch_assoc()) {
-            $realPrice = $row["uplt"] * $fuel_littel;
-        } else {
-            $realPrice = 0;
-        }
-
-        // Close statement
-        $stmt->close();
-
-        $sql = "INSERT INTO `quick_action`(`head_mission`, `driver`, `plate_no`, `fuel`, `price`, `origin`, `destination`, `description`, `prepared_by`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO `quick_action`(`head_mission`, `driver`, `plate_no`, `fuel`, `origin`, `destination`, `description`, `prepared_by`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         $statement = $db->prepare($sql);
-        $statement->bind_param("sssidssss", $header, $driver, $plate, $fuel_littel, $realPrice, $origin, $destination, $description, $prepared_by);
+        $statement->bind_param("sssissss", $header, $driver, $plate, $fuel_littel, $origin, $destination, $description, $prepared_by);
 
         if ($statement->execute()) {
             $success = "Request submitted successfully.";
@@ -56,50 +38,6 @@ if (isset($_POST['quick_request'])) {
     }
 }
 ?>
-
-<!-- UPDATING FUEL PRICE -->
-<?php
-$errors = [];
-$success = "";
-
-if (isset($_POST['setPrice'])) {
-    $fuelType = $_POST['fuelType'] ?? '';
-    $price = $_POST['price'] ?? '';
-
-    if (empty($fuelType) || empty($price)) {
-        $errors[] = "Please select a fuel type and enter a valid price.";
-    } elseif (!is_numeric($price) || $price <= 0) {
-        $errors[] = "Invalid price entered.";
-    } else {
-        try {
-            // Prepare SQL statement
-            $sql = "UPDATE `fuel` SET `uplt` = ?, `status` = 'active', `date` = NOW() WHERE `type` = ?";
-            $statement = $db->prepare($sql);
-
-            if (!$statement) {
-                throw new Exception("Failed to prepare the SQL statement.");
-            }
-
-            // Bind parameters (corrected types: price is `double`, fuelType is `string`)
-            $statement->bind_param("ds", $price, $fuelType);
-
-            // Execute query
-            if ($statement->execute()) {
-                $success = "Fuel price updated successfully.";
-            } else {
-                throw new Exception("Failed to update fuel price.");
-            }
-
-            // Close statement
-            $statement->close();
-        } catch (Exception $e) {
-            $errors[] = "Error: " . $e->getMessage();
-        }
-    }
-}
-?>
-
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -118,7 +56,7 @@ if (isset($_POST['setPrice'])) {
         <div class="flex-1 p-6">
             <!-- Top Bar -->
             <div class="flex justify-between items-center bg-white p-4 rounded shadow-md">
-                <h1 class="text-xl font-semibold text-lime-700 flex flex-row items-center gap-2"><i class="fa-solid fa-home"></i> <span class="lg:flex md:flex sm:flex hidden">Quick Actions</span></h1>
+                <h1 class="text-xl font-semibold text-lime-700 flex flex-row items-center gap-2"><i class="fa-solid fa-home"></i> <span class="lg:flex md:flex sm:flex hidden">Dashboard</span></h1>
                 <div class="flex items-center space-x-4">
                     <span class="text-gray-600"> <?php echo "<b>" . $_SESSION["name"] . "</b>"; ?></span>
                     <?php echo (strtoupper($_SESSION['role']) == 'LOGISTICS') ?
@@ -143,10 +81,6 @@ if (isset($_POST['setPrice'])) {
             $result = $db->query($sql);
             ?>
 
-            <a href="./quick_request.php?price" class="block text-white bg-lime-800 px-2 hover:bg-lime-600 w-fit rounded">
-                <span class="text-white text-lg">⚡</span>Manage Price
-            </a>
-
             <div class="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 grid-cols-1 gap-4 p-4">
                 <?php while ($row = $result->fetch_assoc()) : ?>
                     <div class="bg-white shadow-lg rounded-lg p-4 border border-gray-200 flex flex-row items-center justify-between">
@@ -156,13 +90,12 @@ if (isset($_POST['setPrice'])) {
                             <p class="text-gray-700"><strong>Driver:</strong> <?php echo htmlspecialchars($row['driver']); ?></p>
                             <p class="text-gray-700"><strong>Plate No:</strong> <?php echo htmlspecialchars($row['plate_no']); ?></p>
                             <p class="text-gray-700"><strong>Fuel:</strong> <?php echo htmlspecialchars($row['fuel']); ?> Liters</p>
-                            <p class="text-gray-700"><strong>Price:</strong> <?php echo htmlspecialchars($row['price']); ?> RWF</p>
                             <p class="text-gray-700"><strong>From:</strong> <?php echo htmlspecialchars($row['origin']); ?></p>
                             <p class="text-gray-700"><strong>To:</strong> <?php echo htmlspecialchars($row['destination']); ?></p>
                             <p class="text-gray-700"><strong>Description:</strong>
                                 <?php
                                 $descript = (htmlspecialchars($row['description']));
-                                echo (mb_strlen($descript > 100)) ? mb_substr($descript, 0, 50) . '...' : $descript;
+                                echo (mb_strlen($descript > 300)) ? mb_substr($descript, 0, 100) . '...' : $descript;
                                 ?>
                             </p>
                         </div>
@@ -223,11 +156,6 @@ if (isset($_POST['setPrice'])) {
                         <input type="text" name="header" placeholder="Event Header" class="input-field text-sm sm:text-base">
                         <input type="text" name="driver" placeholder="Driver Name" class="input-field text-sm sm:text-base">
                         <input type="text" name="plate" placeholder="Plate Number" class="input-field text-sm sm:text-base">
-                        <select name="fueltype" id="" class="input-field text-sm sm:text-base">
-                            <option value="" placeholder="Select Options">Select Options</option>
-                            <option value="Diesel">Diesel</option>
-                            <option value="Petrol">Petrol</option>
-                        </select>
                         <input type="number" name="fuel_littel" placeholder="Fuel Litter" class="input-field text-sm sm:text-base">
                         <input type="text" name="origin" placeholder="From" class="input-field text-sm sm:text-base">
                         <input type="text" name="destin" placeholder="Destination" class="input-field text-sm sm:text-base">
@@ -239,41 +167,6 @@ if (isset($_POST['setPrice'])) {
                 </div>
             </div>
 
-            <!-- POPUP FOR MANAGING FUEL PRICE -->
-            <div id="popupPrice" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center 
-                <?php echo isset($_GET['price']) ? '' : 'hidden'; ?> p-4">
-                <div class="bg-white shadow-lg rounded-lg p-4 sm:p-6 md:p-8 w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl relative max-h-[90vh] overflow-y-auto">
-                    <button id="closeFormBt" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-xl">&times;</button>
-                    <h2 class="text-lg sm:text-xl md:text-2xl font-semibold text-lime-700 text-center mb-4 sm:mb-6">
-                        Fuel prices
-                    </h2>
-
-                    <?php if (!empty($errors)): ?>
-                        <div class="bg-red-100 text-red-700 p-2 sm:p-3 rounded mb-4 text-sm sm:text-base">
-                            <?php foreach ($errors as $error) {
-                                echo "<p>$error</p>";
-                            } ?>
-                        </div>
-                    <?php endif; ?>
-
-                    <?php if (!empty($success)): ?>
-                        <div class="bg-green-100 text-green-700 p-2 sm:p-3 rounded mb-4 text-sm sm:text-base">
-                            <?php echo $success; ?>
-                        </div>
-                    <?php endif; ?>
-
-                    <form action="" method="post" class="flex flex-col gap-3 sm:gap-4">
-                        <select name="fuelType" class="input-field text-sm sm:text-base">
-                            <option value="Diesel">Diesel</option>
-                            <option value="Petrol">Petrol</option>
-                        </select>
-                        <input type="number" min=1 name="price" placeholder="Update price" class="input-field text-sm sm:text-base">
-                        <button type="submit" name="setPrice" class="bg-lime-700 text-white py-2 rounded-lg hover:bg-lime-800 transition text-sm sm:text-base">
-                            Set Price
-                        </button>
-                    </form>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -306,10 +199,6 @@ if (isset($_POST['setPrice'])) {
             if (event.target === this) {
                 this.classList.add("hidden");
             }
-        });
-
-        document.getElementById('closeFormBt').addEventListener('click', function() {
-            document.getElementById('popupPrice').classList.add('hidden');
         });
     </script>
 </body>
