@@ -1,0 +1,8 @@
+{
+    "require": {
+        "africastalking/africastalking": "^3.0",
+        "weezqyd/africastalking": "^1.1",
+        "guzzlehttp/guzzle": "^7.9",
+        "vlucas/phpdotenv": "^5.6"
+    }
+}

@@ -24,7 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
         $row = $result->fetch_assoc();
 
         // Verify password (assuming `stf_pwd_vis` is hashed using password_hash)
-        if (strtolower($row['stf_status']) !== 'inactive'){
+        if (strtolower($row['stf_status']) !== 'inactive') {
 
             if (($password === $row['stf_pwd_vis'])) {
                 // Store user details in session
@@ -33,14 +33,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
                 $_SESSION['name'] = $row['stf_names'];
                 $_SESSION['role'] = $row['stf_position'];
                 echo "<script>alert('Login Successful'); window.location='../dashboard.php';</script>";
-            }else {
+            } else {
                 echo "<script>alert('Invalid password. Please try again.'); window.location='../login.php';</script>";
             }
-        }else{
+        } else {
             echo "<script>alert('Account Innactive'); window.location='../login.php';</script>";
-
         }
-        
     } else {
         echo "<script>alert('User not found. Please check your phone number.'); window.location='../login.php';</script>";
     }
@@ -48,4 +46,3 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
     $stmt->close();
     $db->close();
 }
-?>

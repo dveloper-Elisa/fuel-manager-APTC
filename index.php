@@ -10,6 +10,14 @@ if (!isset($_SESSION["phone"])) {
 }
 
 include("./connection.php");
+
+require 'vendor/autoload.php';
+
+use Dotenv\Dotenv;
+
+$dotenv = Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
 ?>
 
 <!DOCTYPE html>
@@ -110,6 +118,10 @@ include("./connection.php");
                     VALUES ('$staff_code',now(), '$from', '$Destination','$departure', '$return', '$Hnames', '$Vtype', '$quantinty', 0, $realPrice, '$Dnames', '$fuelType', '$Pnumber', '-', '-', '$fileDestination', 'pending', now())";
 
                                 if (mysqli_query($db, $sql)) {
+
+                                    // INCLUDING AFRICA'S TOLKING FOR SENDING SMS
+                                    include "./messages/sendSms.php";
+
         ?>
                                     <!-- SENDING ALTER OF SUCCESS REQUEST -->
                                     <script>

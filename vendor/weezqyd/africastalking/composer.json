@@ -1,0 +1,34 @@
+{
+	"name": "weezqyd/africastalking",
+    "description": "PHP Api gateway for AfricasTalking",
+    "type": "library",
+    "license": "mit",
+    "authors": [
+        {
+            "name": "Master Weez",
+            "email": "wizqydy@gmail.com"
+        }
+    ],
+    "require": {
+        "weezqyd/http-adapters": "^0.0.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.6|~6.1",
+        "guzzlehttp/guzzle": "^6.3",
+        "kriswallsmith/buzz": "~0.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "AfricasTalking\\": "src/"
+        }
+    },
+    "scripts":{
+        "phpunit":"vendor/bin/phpunit"
+    },
+     "autoload-dev": {
+        "psr-4": {
+            "AfricasTalking\\Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "stable"
+}

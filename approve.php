@@ -11,6 +11,14 @@ if ((!isset($_SESSION["phone"]) || !isset($_SESSION["name"])) && (strtoupper($_S
 
 include("./connection.php");
 
+require __DIR__ . '/vendor/autoload.php';
+
+use Dotenv\Dotenv;
+
+$dotenv = Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
+
 if (isset($_GET["approve"])) {
 
     // HANDLE FORM SUBMISSION FOR APPROVAL
@@ -92,6 +100,9 @@ if (isset($_GET["approve"])) {
                 // Close statement
                 $stmt->close();
                 if ($approve) {
+
+                    // INCLUDING FILE FOR SENDING SMS TO THE PHONES
+                    include "./messages/sendSms.php";
                 ?>
                     <script>
                         setTimeout(() => {
@@ -146,7 +157,15 @@ if (isset($_GET["approve"])) {
 
                     <label for="requested" class="block text-gray-700 font-semibold">Requested Quantity (L)</label>
                     <input type="number" name="" id="requested" value=<?php echo $sql['requested_qty'] ?> disabled class="w-full p-2 border border-black rounded mb-4">
+                    <?php
+                    if (strtoupper($_SESSION['role']) === 'D/CEO' || strtoupper($_SESSION['role'] === 'CEO')) {
+                    ?>
+                        <label for="received" class="block text-gray-700 font-semibold">Granted by Logistic</label>
+                        <input type="number" value=<?php echo $sql['received_qty'] ?> id="received" disabled class="w-full p-2 border border-black rounded mb-4">
 
+                    <?php
+                    }
+                    ?>
                     <label for="received" class="block text-gray-700 font-semibold">Granted Quantity (L)</label>
                     <input type="number" name="received" id="received" placeholder="Quantity in Liters (L)" required class="w-full p-2 border border-black rounded mb-4">
 
