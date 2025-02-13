@@ -127,7 +127,7 @@ if (isset($_GET['id'])) {
     // Output the PDF as a download
     header('Content-Type: application/pdf');
     header('Content-Disposition: inline; filename="Fuel Report.pdf"');
-    $fuelDocument->Output('D', 'Fuel Report.pdf');
+    $fuelDocument->Output('D', 'Fuel Request Report.pdf');
     exit;
 }
 
@@ -227,7 +227,7 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
         <div class="flex-1 p-6">
             <!-- Top Bar -->
             <div class="flex justify-between items-center bg-white p-4 rounded shadow-md">
-                <h1 class="text-xl font-semibold text-lime-700 flex flex-row items-center gap-2"><i class="fa-solid fa-home"></i> <span class="lg:flex md:flex sm:flex hidden">Dashboard</span></h1>
+                <h1 class="text-xl font-semibold text-lime-700 flex flex-row items-center gap-2"><i class="fa-solid fa-home"></i> <span class="lg:flex md:flex sm:flex hidden">Requests</span></h1>
                 <div class="flex items-center space-x-4">
                     <span class="text-gray-600"> <?php echo "<b>" . $_SESSION["name"] . "</b>"; ?></span>
                     <?php echo (strtoupper($_SESSION['role']) == 'D/CEO' || strtoupper($_SESSION['role']) == 'CEO') ?
@@ -357,7 +357,8 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
                     } else if ($row['status'] === 'rejected') {
                         echo '<span class="font-bold ml-2 text-red-500 cursor-not-allowed">Rejected</span>';
                     } else if ($row['status'] === 'pending') {
-                        echo '<a href="approve.php?approve=' . urlencode($row['req_id']) . '" class="text-red-500 hover:underline ml-2">Approve</a>';
+
+                        echo '<button onclick="viewRequest(' . $row['req_id'] . ')" class="text-red-500 hover:underline ml-2">Approve</button>';
                     } else {
                         echo '<a href="requests.php?cancel=' . urlencode($row['req_id']) . '" class="text-red-500 hover:underline">Reject</a>';
                     }
@@ -432,7 +433,7 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
                          <b>Requested Fuel:</b> ${data.requested_qty} L <br>
                          <b>Fuel Price:</b> ${data.price} RWF<br>
                          <div class="mt-4 flex justify-between"> 
-                                <a href='./approve.php?approve=${data.req_id}' ${data.status.toLowerCase() === 'approved'? 'disabled' : ''} class="disable bg-green-500 text-white px-4 py-2 rounded">${data.status.toLowerCase() === 'approved'? 'Approved' : 'Verify'}</a>
+                                <a href='./approve.php?approve=${data.req_id}' ${data.status.toLowerCase() === 'approved'? 'disabled' : ''} class="disable bg-green-500 text-white px-4 py-2 rounded">${data.status.toLowerCase() === 'approved' ? 'Approved' : 'Approve'}</a>
                                 <button onclick="cancelRequest(${data.req_id})" class="bg-red-500 text-white px-4 py-2 rounded">Cancel</button>
                                 <button onclick="closeModal(${data.req_id})" class="bg-gray-500 text-white px-4 py-2 rounded">X</button>
                             </div>

@@ -133,7 +133,7 @@ if (isset($_POST['setPrice'])) {
             $offset = ($page - 1) * $limit;
 
             // Fetch total records for pagination
-            $totalQuery = "SELECT COUNT(*) AS total FROM `quick_action`";
+            $totalQuery = "SELECT COUNT(*) AS total FROM `quick_action` ORDER BY created_at DESC";
             $totalResult = $db->query($totalQuery);
             $totalRow = $totalResult->fetch_assoc();
             $totalPages = ceil($totalRow['total'] / $limit);
@@ -245,7 +245,7 @@ if (isset($_POST['setPrice'])) {
                 <div class="bg-white shadow-lg rounded-lg p-4 sm:p-6 md:p-8 w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl relative max-h-[90vh] overflow-y-auto">
                     <button id="closeFormBt" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-xl">&times;</button>
                     <h2 class="text-lg sm:text-xl md:text-2xl font-semibold text-lime-700 text-center mb-4 sm:mb-6">
-                        Fuel prices
+                        Update Fuel prices
                     </h2>
 
                     <?php if (!empty($errors)): ?>

@@ -18,7 +18,6 @@ use Dotenv\Dotenv;
 $dotenv = Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
-
 if (isset($_GET["approve"])) {
 
     // HANDLE FORM SUBMISSION FOR APPROVAL
@@ -37,7 +36,6 @@ if (isset($_GET["approve"])) {
             if ($row = $resqult->fetch_assoc()) {
                 $fuelType = $row["fuel_type"];
 
-
                 // GETING PRICE OF FUEL
                 $stmt = $db->prepare("SELECT uplt FROM fuel WHERE type = ? AND status = 'active'");
                 $stmt->bind_param("s", $fuelType);
@@ -48,7 +46,6 @@ if (isset($_GET["approve"])) {
                 if ($row = $result->fetch_assoc()) {
                     $realPrice = $row["uplt"] * $granted_quantinty;
                 }
-
 
                 $approve = mysqli_query($db, "UPDATE fuel_request SET received_qty = '$granted_quantinty', price = '$realPrice', approved_by = '$approved_by', status = 'approved' WHERE req_id = '$id'");
 
@@ -82,7 +79,6 @@ if (isset($_GET["approve"])) {
             if ($row = $resqult->fetch_assoc()) {
                 $fuelType = $row["fuel_type"];
 
-
                 // GETING PRICE OF FUEL
                 $stmt = $db->prepare("SELECT uplt FROM fuel WHERE type = ? AND status = 'active'");
                 $stmt->bind_param("s", $fuelType);
@@ -93,7 +89,6 @@ if (isset($_GET["approve"])) {
                 if ($row = $result->fetch_assoc()) {
                     $realPrice = $row["uplt"] * $granted_quantinty;
                 }
-
 
                 $approve = mysqli_query($db, "UPDATE fuel_request SET received_qty = '$granted_quantinty', price = '$realPrice', verified_by = '$verified_by' WHERE req_id = '$id'");
 
@@ -141,14 +136,14 @@ if (isset($_GET["approve"])) {
             <div class="flex-1 p-6">
                 <!-- Top Bar -->
                 <div class="flex justify-between items-center bg-white p-4 rounded shadow-md">
-                    <h1 class="text-xl font-semibold text-lime-700 flex flex-row items-center gap-2"><i class="fa-solid fa-home"></i> <span class="lg:flex md:flex sm:flex hidden">Dashboard</span></h1>
+                    <h1 class="text-xl font-semibold text-lime-700 flex flex-row items-center gap-2"><i class="fa-solid fa-home"></i> <span class="lg:flex md:flex sm:flex hidden">Approve</span></h1>
                     <div class="flex items-center space-x-4">
                         <span class="text-gray-600"> <?php echo "<b>" . $_SESSION["name"] . "</b>" ?></span>
                     </div>
                 </div>
 
 
-                <form action="" method="post" class="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
+                <form action="" method="post" class="bg-white p-6 rounded-lg shadow-md w-full max-w-md mt-5">
                     <?php
                     $id = $_GET["approve"];
                     $sql = mysqli_fetch_array(mysqli_query($db, "SELECT * FROM fuel_request WHERE req_id = '$id' "));

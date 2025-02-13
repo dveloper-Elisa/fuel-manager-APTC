@@ -18,7 +18,7 @@ $logisticsMessage = "Dear Logistic Officer, I have submitted a fuel request and 
 $deputyMessage = "Dear D/CEO, I have verified the fuel request and we are now awaiting your approval. Best regards.";
 
 // Define message parameters
-$recipients = ($role !== 'LOGISTICS' && ($role !== 'CEO' || $role !== 'D/CEO')) ? "+250726982830" : ($role == 'LOGISTICS' ? '+250787647168' : exit);
+$recipients = ($role !== 'LOGISTICS' && ($role !== 'CEO' || $role !== 'D/CEO')) ? "+250726982830" : ($role == 'LOGISTICS' ? "+250787647168" : exit);
 $message = ($role !== 'LOGISTICS' && ($role !== 'CEO' || $role !== 'D/CEO')) ? "$logisticsMessage" : ($role == 'LOGISTICS' ? "$deputyMessage" : exit);
 $from = null;
 
