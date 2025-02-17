@@ -66,6 +66,10 @@ if (isset($_POST['setPrice'])) {
     $fuelType = $_POST['fuelType'] ?? '';
     $price = $_POST['price'] ?? '';
 
+    // CALCULATE PRICE DISCOUNT of 40 rwf PER LITER
+    $price -= 40;
+
+
     if (empty($fuelType) || empty($price)) {
         $errors[] = "Please select a fuel type and enter a valid price.";
     } elseif (!is_numeric($price) || $price <= 0) {
@@ -152,7 +156,7 @@ if (isset($_POST['setPrice'])) {
                     <div class="bg-white shadow-lg rounded-lg p-4 border border-gray-200 flex flex-row items-center justify-between">
 
                         <div class="w-fit">
-                            <h3 class="text-md font-bold text-lime-700"><?php echo htmlspecialchars($row['head_mission']); ?></h3>
+                            <h3 class="text-md font-bold text-lime-700 capitalize"><?php echo htmlspecialchars($row['head_mission']); ?></h3>
                             <p class="text-gray-700"><strong>Driver:</strong> <?php echo htmlspecialchars($row['driver']); ?></p>
                             <p class="text-gray-700"><strong>Plate No:</strong> <?php echo htmlspecialchars($row['plate_no']); ?></p>
                             <p class="text-gray-700"><strong>Fuel:</strong> <?php echo htmlspecialchars($row['fuel']); ?> Liters</p>
@@ -220,15 +224,15 @@ if (isset($_POST['setPrice'])) {
                     <?php endif; ?>
 
                     <form action="" method="post" class="flex flex-col gap-3 sm:gap-4">
-                        <input type="text" name="header" placeholder="Event Header" class="input-field text-sm sm:text-base">
-                        <input type="text" name="driver" placeholder="Driver Name" class="input-field text-sm sm:text-base">
-                        <input type="text" name="plate" placeholder="Plate Number" class="input-field text-sm sm:text-base">
+                        <input type="text" name="header" placeholder="Event Header" class="capitalize input-field text-sm sm:text-base">
+                        <input type="text" name="driver" placeholder="Driver Name" class="capitalize input-field text-sm sm:text-base">
+                        <input type="text" name="plate" placeholder="Plate Number" class="uppercase input-field text-sm sm:text-base">
                         <select name="fueltype" id="" class="input-field text-sm sm:text-base">
                             <option value="" placeholder="Select Options">Select Options</option>
                             <option value="Diesel">Diesel</option>
                             <option value="Petrol">Petrol</option>
                         </select>
-                        <input type="number" name="fuel_littel" placeholder="Fuel Litter" class="input-field text-sm sm:text-base">
+                        <input type="number" min=1 name="fuel_littel" placeholder="Fuel Litter" class="input-field text-sm sm:text-base">
                         <input type="text" name="origin" placeholder="From" class="input-field text-sm sm:text-base">
                         <input type="text" name="destin" placeholder="Destination" class="input-field text-sm sm:text-base">
                         <textarea name="description" placeholder="Write Description" class="input-field h-20 sm:h-24 text-sm sm:text-base"></textarea>

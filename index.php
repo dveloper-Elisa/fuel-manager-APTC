@@ -45,9 +45,9 @@ $dotenv->load();
             <div>
                 <p id="response" class="text-red-500"></p>
             </div>
-            <input type="text" placeholder="Driver Name" name="Dnames" id="driverName" required>
-            <input type="text" placeholder="Vehicle Type" name="Vtype" id="vehicleType" required>
-            <input type="text" placeholder="Plate Number" name="Pnumber" id="plateNumber" required>
+            <input type="text" style="text-transform: capitalize;" placeholder="Driver Name" name="Dnames" id="driverName" required>
+            <input type="text" style="text-transform: capitalize;" placeholder="Vehicle Type" name="Vtype" id="vehicleType" required>
+            <input type="text" style="text-transform: uppercase;" placeholder="Plate Number" name="Pnumber" id="plateNumber" required>
             <input type="text" placeholder="From" name="from" id="from" required>
             <input type="text" placeholder="Destination" name="Destination" id="destin" required>
             <label for="departure">Date of Departure</label>
@@ -61,7 +61,7 @@ $dotenv->load();
                 <option value="Petrol">Petrol</option>
             </select>
             <label for="quantinty">Quantity in Liters</label>
-            <input type="number" placeholder="Fuel Quantity" name="quantinty" id="quantinty" required>
+            <input type="number" min=1 placeholder="Fuel Quantity" name="quantinty" id="quantinty" required>
             <label for="signature">Head of Mission's Signature</label>
             <input type="file" name="signature" id="signature" accept=".jpg, .jpeg, .png">
             <input type="submit" value="Submit" name="btn">

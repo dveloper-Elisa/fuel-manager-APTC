@@ -66,7 +66,7 @@ if (isset($_GET['pdf_id'])) {
 
     $quickPdf->Ln(20);
     $quickPdf->Cell(95, 10, 'Issued by: ', 0, 0, 'L');
-    $quickPdf->Cell(95, 10, 'Approved by: ', 0, 1, 'L');
+    $quickPdf->Cell(95, 10, 'Informed: ', 0, 1, 'L');
 
     $quickPdf->Cell(95, 10, $data['prepared_by'], 0, 0, 'L');
     $quickPdf->Cell(95, 10, 'Lt Col. Alexandre KARASIRA', 0, 1, 'L');

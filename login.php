@@ -26,7 +26,6 @@
         </div>
     </div>
 
-
     <script>
         function showLoader() {
             document.getElementById("loader").classList.remove("hidden");
