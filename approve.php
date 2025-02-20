@@ -150,7 +150,7 @@ if (isset($_GET["approve"])) {
                     ?>
                     <div class="text-blue-500 p-2" id="verify"></div>
 
-                    <label for="requested" class="block text-gray-700 font-semibold">Requested Quantity (L)</label>
+                    <label for="requested" class="block text-gray-700 font-semibold">Estimated Fuel (L)</label>
                     <input type="number" name="" id="requested" value=<?php echo $sql['requested_qty'] ?> disabled class="w-full p-2 border border-black rounded mb-4">
                     <?php
                     if (strtoupper($_SESSION['role']) === 'D/CEO' || strtoupper($_SESSION['role'] === 'CEO')) {

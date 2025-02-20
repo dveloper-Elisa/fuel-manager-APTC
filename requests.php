@@ -357,7 +357,6 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
                     } else if ($row['status'] === 'rejected') {
                         echo '<span class="font-bold ml-2 text-red-500 cursor-not-allowed">Rejected</span>';
                     } else if ($row['status'] === 'pending') {
-
                         echo '<button onclick="viewRequest(' . $row['req_id'] . ')" class="text-red-500 hover:underline ml-2">Approve</button>';
                     } else {
                         echo '<a href="requests.php?cancel=' . urlencode($row['req_id']) . '" class="text-red-500 hover:underline">Reject</a>';
@@ -427,10 +426,11 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
                          <b>Plate Number:</b> ${data.plate_number}<br>
                          <b>From:</b> ${data.location_from}<br>
                          <b>Destination:</b> ${data.location_to}<br>
+                         <b>Distance:</b> ${data.kilometer} km<br>
                          <b>Departure:</b> ${data.date_from}<br>
                          <b>Return:</b> ${data.date_to}<br>
                          <b>Fuel:</b> ${data.fuel_type}<br>
-                         <b>Requested Fuel:</b> ${data.requested_qty} L <br>
+                         <b>Estimated Fuel:</b> ${data.requested_qty} L <br>
                          <b>Fuel Price:</b> ${data.price} RWF<br>
                          <div class="mt-4 flex justify-between"> 
                                 <a href='./approve.php?approve=${data.req_id}' ${data.status.toLowerCase() === 'approved'? 'disabled' : ''} class="disable bg-green-500 text-white px-4 py-2 rounded">${data.status.toLowerCase() === 'approved' ? 'Approved' : 'Approve'}</a>
@@ -450,12 +450,6 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
          * function for verifying request is remove and placed to approve.php the it differ according to their role LOGISTICS, CEO or D/CEO
          */
 
-        // function verifyRequest(id) {
-        //     fetch(`requests.php?verify=${id}`)
-        //         .then(response => response.json())
-        //         .then(data => alert(data.message))
-        //     closeModal();
-        // }
 
         function cancelRequest(id) {
             fetch(`requests.php?reject=${id}`)

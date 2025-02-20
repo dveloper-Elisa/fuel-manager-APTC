@@ -37,19 +37,60 @@ $dotenv->load();
     <div class="flex h-screen">
         <?php
         include("./components/side.php");
+        include "./measures/districts.php";
+
+        /**
+         * 
+         * DISPLAYING VEHICLE THAT MAKES TRAVEL FO MISSION
+         * 
+         */
+
+        $missionedCars = ["RAE450P", "RAE449P", "RAF553E", "RAC887L", "RAD036D", "RDF198P"];
+        // Convert array to a string for SQL query
+        $plateNumbers = "'" . implode("','", $missionedCars) . "'";
+        $query = "SELECT plateno, vname FROM vehicles WHERE plateno IN ($plateNumbers)";
+        $result = mysqli_query($db, $query);
+
+        $vehicles = [];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $vehicles[$row['plateno']] = $row['vname'];
+        }
+
         ?>
 
-        <!-- <a href="./requests.php" target="_blank" rel="noopener noreferrer">View Requests</a> -->
         <form method="post" enctype="multipart/form-data" class="overflow-y-scroll">
             <h2>Fuel Request Management System</h2>
             <div>
                 <p id="response" class="text-red-500"></p>
             </div>
             <input type="text" style="text-transform: capitalize;" placeholder="Driver Name" name="Dnames" id="driverName" required>
-            <input type="text" style="text-transform: capitalize;" placeholder="Vehicle Type" name="Vtype" id="vehicleType" required>
-            <input type="text" style="text-transform: uppercase;" placeholder="Plate Number" name="Pnumber" id="plateNumber" required>
-            <input type="text" placeholder="From" name="from" id="from" required>
-            <input type="text" placeholder="Destination" name="Destination" id="destin" required>
+
+            <!-- displaying data Dynamicary and auto fills the vehicle type -->
+            <select id="plateSelect" name="Pnumber" onchange="updateVehicleType()">
+                <option value="">-- Select Plate Number --</option>
+                <?php
+                foreach ($vehicles as $plate => $type) {
+                    echo "<option value='$plate'>$plate</option>";
+                }
+                ?>
+            </select>
+
+            <input type="text" id="vehicleType" name="Vtype" placeholder="Vehicle Type" readonly>
+            <select name="from" id="select" class="input-field text-sm sm:text-base" required>
+                <option value="">-- District Of Origin --</option>
+                <?php foreach ($districts as $district): ?>
+                    <option value="<?php echo $district; ?>"><?php echo $district; ?></option>
+                <?php endforeach; ?>
+            </select>
+
+            <select name="Destination" id="select" class="input-field text-sm sm:text-base" required>
+                <option value="">-- Select a Destination --</option>
+                <?php foreach ($districts as $district): ?>
+                    <option value="<?php echo $district; ?>"><?php echo $district; ?></option>
+                <?php endforeach; ?>
+            </select>
+
+
             <label for="departure">Date of Departure</label>
             <input type="date" name="departure" id="departure" required>
             <label for="return">Date of Return</label>
@@ -60,8 +101,6 @@ $dotenv->load();
                 <option value="Diesel">Diesel</option>
                 <option value="Petrol">Petrol</option>
             </select>
-            <label for="quantinty">Quantity in Liters</label>
-            <input type="number" min=1 placeholder="Fuel Quantity" name="quantinty" id="quantinty" required>
             <label for="signature">Head of Mission's Signature</label>
             <input type="file" name="signature" id="signature" accept=".jpg, .jpeg, .png">
             <input type="submit" value="Submit" name="btn">
@@ -79,9 +118,33 @@ $dotenv->load();
             $departure = mysqli_real_escape_string($db, $_POST["departure"]);
             $return = mysqli_real_escape_string($db, $_POST["return"]);
             $fuelType = mysqli_real_escape_string($db, $_POST["fuel"]);
-            $quantinty = mysqli_real_escape_string($db, $_POST["quantinty"]);
 
-            // Handle file upload
+            /**
+             * 
+             *   INCLUDING FILE FOR CALCULATING THE KILOMETERS (KM) using Open streat map view
+             * 
+             * */
+            include "./measures/distance.php";
+
+            // CALCULATING THE QUANTITY OF FUEL THAT WILL BE CONSUMED PER JUARNEY
+            $quantinty = 0;
+            function rounding($distance)
+            {
+                $decimal = $distance - floor($distance);
+
+                if ($decimal >= 0.5) {
+                    return ceil($distance);
+                } else {
+                    return floor($distance);
+                }
+            }
+            if ($Pnumber !== 'RDF198P') {
+                $quantinty = rounding(($distance / 8) * 2); // I Called function for rounding
+            } else {
+                $quantinty = rounding(($distance / 7) * 2); // I Called function for rounding
+            }
+
+            // Handle Signature upload
             if (isset($_FILES["signature"]) && $_FILES["signature"]["error"] === 0) {
                 $uploadDir = "uploads/";
                 if (!is_dir($uploadDir)) {
@@ -103,7 +166,11 @@ $dotenv->load();
 
                         $staff_code = $_SESSION['staff_code'];
 
-                        // GETING THE PRICE OF FUELS FROM DATABASE
+                        /**
+                         * 
+                         *  GETING THE PRICE OF FUELS FROM DATABASE
+                         * 
+                         * */
                         $sqlPrice = "SELECT uplt FROM fuel WHERE type = ? AND status = 'active'";
                         $resultPrice = $db->prepare($sqlPrice);
                         $resultPrice->bind_param("s", $fuelType);
@@ -114,12 +181,16 @@ $dotenv->load();
 
                             if (move_uploaded_file($fileTmpName, $fileDestination)) {
                                 // Insert data into the database
-                                $sql = "INSERT INTO fuel_request (stf_code, requested_date, location_from, location_to, date_from, date_to, head_mission, vehicle_type, requested_qty, received_qty, price, driver_name, fuel_type, plate_number, verified_by, approved_by, `signature`, `status`, created_at ) 
-                    VALUES ('$staff_code',now(), '$from', '$Destination','$departure', '$return', '$Hnames', '$Vtype', '$quantinty', 0, $realPrice, '$Dnames', '$fuelType', '$Pnumber', '-', '-', '$fileDestination', 'pending', now())";
+                                $sql = "INSERT INTO fuel_request (stf_code, requested_date, location_from, location_to, kilometer, date_from, date_to, head_mission, vehicle_type, requested_qty, received_qty, price, driver_name, fuel_type, plate_number, verified_by, approved_by, `signature`, `status`, created_at ) 
+                    VALUES ('$staff_code',now(), '$from', '$Destination', $distance,'$departure', '$return', '$Hnames', '$Vtype', '$quantinty', 0, $realPrice, '$Dnames', '$fuelType', '$Pnumber', '-', '-', '$fileDestination', 'pending', now())";
 
                                 if (mysqli_query($db, $sql)) {
 
-                                    // INCLUDING AFRICA'S TOLKING FOR SENDING SMS
+                                    /**
+                                     *   INCLUDING AFRICA'S TOLKING FOR SENDING SMS
+                                     * 
+                                     * 
+                                     * */
                                     include "./messages/sendSms.php";
 
         ?>
@@ -172,7 +243,8 @@ $dotenv->load();
 
 
     <style>
-        #select {
+        #select,
+        #plateSelect {
             width: 100%;
             padding: 12px;
             margin: 6px 0;
@@ -187,22 +259,26 @@ $dotenv->load();
         }
 
         /* Add hover effect */
-        #select:hover {
+        #select:hover,
+        #plateSelect:hover {
             border-color: #1e1e1e;
         }
 
         /* Add focus effect */
-        #select:focus {
+        #select:focus,
+        #plateSelect:focus {
             border-color: #4caf50;
             box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
         }
 
         /* Style dropdown arrow */
-        #select::-ms-expand {
+        #select::-ms-expand,
+        #plateSelect::-ms-expand {
             display: none;
         }
 
-        #select {
+        #select,
+        #plateSelect {
             appearance: none;
             /* Remove default styling */
             -webkit-appearance: none;
@@ -214,5 +290,13 @@ $dotenv->load();
         }
     </style>
 </body>
+
+<script>
+    function updateVehicleType() {
+        let selectedPlate = document.getElementById("plateSelect").value;
+        let vehicleTypes = <?php echo json_encode($vehicles); ?>;
+        document.getElementById("vehicleType").value = vehicleTypes[selectedPlate] || "";
+    }
+</script>
 
 </html>
