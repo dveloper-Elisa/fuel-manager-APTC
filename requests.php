@@ -95,7 +95,7 @@ if (isset($_GET['id'])) {
 
             // Requested & Received Fuel
             $fuelDocument->SetFont('Times', '', 10);
-            $fuelDocument->Cell(95, 10, 'Requested Fuel: ', 0, 0, 'L');
+            $fuelDocument->Cell(95, 10, 'Estimated Fuel: ', 0, 0, 'L');
             $fuelDocument->SetFont('Times', 'B', 10);
             $fuelDocument->MultiCell(0, 10, $row['requested_qty'] . ' Liters', 0, 'L');
 
