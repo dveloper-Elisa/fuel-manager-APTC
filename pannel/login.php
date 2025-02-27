@@ -1,3 +1,18 @@
+<body>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+
+    <!-- Modal -->
+    <div id="statusModal" class="fixed inset-0 hidden bg-black bg-opacity-50 flex justify-center items-center">
+        <div class="bg-white p-6 rounded-lg w-1/3">
+            <h2 class="text-center text-5 font-bold text-gray-700">✅</h2>
+            <p id="status" class="text-center text-10 capitalize mt-4 text-gray-600"></p>
+        </div>
+    </div>
+
+</body>
+
+
 <?php
 include "../connection.php";
 session_start();
@@ -32,15 +47,48 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
                 $_SESSION['staff_code'] = $row['stf_code'];
                 $_SESSION['name'] = $row['stf_names'];
                 $_SESSION['role'] = $row['stf_position'];
-                echo "<script>alert('Login Successful'); window.location='../dashboard.php';</script>";
+?>
+                <script>
+                    document.getElementById("statusModal").classList.remove("hidden")
+                    document.getElementById("status").innerHTML = "Login Successful"
+
+                    setTimeout(() => {
+                        window.location = '../dashboard.php'
+                    }, 3000)
+                </script>
+            <?php
             } else {
-                echo "<script>alert('Invalid password. Please try again.'); window.location='../login.php';</script>";
+            ?>
+                <script>
+                    document.getElementById("statusModal").classList.remove("hidden")
+                    document.getElementById("status").innerHTML = "Invalid password. Please try again."
+                    setTimeout(() => {
+                        window.location = '../login.php';
+                    })
+                </script>
+            <?php
             }
         } else {
-            echo "<script>alert('Account Innactive'); window.location='../login.php';</script>";
+            ?>
+            <script>
+                document.getElementById("statusModal").classList.remove("hidden")
+                document.getElementById("status").innerHTML = "Account Innactive"
+                setTimeout(() => {
+                    window.location = '../login.php';
+                })
+            </script>
+        <?php
         }
     } else {
-        echo "<script>alert('User not found. Please check your phone number.'); window.location='../login.php';</script>";
+        ?>
+        <script>
+            document.getElementById("statusModal").classList.remove("hidden")
+            document.getElementById("status").innerHTML = "User not found. Please check your phone number."
+            setTimeout(() => {
+                window.location = '../login.php';
+            })
+        </script>
+<?php
     }
 
     $stmt->close();

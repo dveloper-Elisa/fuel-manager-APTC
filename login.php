@@ -22,7 +22,7 @@
 
         <!-- Loader -->
         <div id="loader" class="hidden mt-4 flex justify-center">
-            <div class="w-8 h-8 border-4 border-yellow-500 border-dashed rounded-full animate-spin"></div>
+            <div class="w-8 h-8 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
         </div>
     </div>
 

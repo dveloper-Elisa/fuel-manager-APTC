@@ -198,7 +198,8 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
         </script>
 
 <?php
-        return;
+
+        // return;
     }
 
     if ($stmt->execute()) {
@@ -220,9 +221,9 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-100">
+<body class="bg-gray-100 w-[100%]">
     <div class="flex h-screen">
-        <?php include("./components/side.php"); ?>
+        <?php include "./components/side.php"; ?>
 
         <div class="flex-1 p-6">
             <!-- Top Bar -->
@@ -237,7 +238,7 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
 
             <!-- Status Filter Links -->
             <div class="mt-4 flex space-x-4">
-                <a href="requests.php?status=approved" class="<?php echo (isset($_GET['status']) && $_GET['status'] === 'approved') ? 'border-t-4 border-zinc-900 px-2 py-1 bg-lime-700 text-white rounded-md' : 'px-2 py-1 bg-lime-700 text-white rounded-md'; ?>">✅ Approved</a>
+                <a href="requests.php?status=approved" class="<?php echo (isset($_GET['status']) && $_GET['status'] === 'approved') ? 'border-t-4 border-zinc-900 px-2 py-1 bg-lime-700 text-white rounded-md' : 'px-2 py-1 bg-lime-700 text-white rounded-md'; ?>"> <?php echo strtolower($_SESSION['role']) === "logistics" ? "✅ Verifyed" : "✅ Approved"  ?></a>
                 <a href="requests.php?status=pending" class="<?php echo (isset($_GET['status']) && $_GET['status'] === 'pending') ? 'border-t-4 border-zinc-900 px-2 py-1 bg-yellow-600 text-white rounded-md' : 'px-2 py-1 bg-yellow-600 text-white rounded-md' ?>">⏳ Pending</a>
                 <a href="requests.php?status=rejected" class="<?php echo (isset($_GET['status']) && $_GET['status'] === 'rejected') ? 'border-t-4 border-zinc-900 px-2 py-1 bg-red-500 text-white rounded-md' : 'px-2 py-1 bg-red-700 text-white rounded-md' ?>">🚫 Rejected</a>
             </div>
@@ -259,7 +260,7 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
             $query = '';
 
             if ($role == 'd/ceo' || $role == 'ceo') {
-                // CEO/D/CEO
+                // CEO or D/CEO
                 if ($status === 'all') {
                     $query = "SELECT * FROM fuel_request WHERE verified_by != ? ORDER BY created_at DESC LIMIT ? OFFSET ?";
                 } else {
@@ -323,8 +324,8 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
 
 
             // Render the HTML table with overflow-x-scroll
-            echo '<div class="w-full overflow-x-scroll mt-4">';
-            echo '<table class="w-full border-collapse border border-black text-left text-gray-700">';
+            echo '<div class="w-[100%] overflow-x-auto mt-4 border border-gray-300">';
+            echo '<table class="min-w-max w-full border-collapse border border-gray-400 text-left text-gray-700">';
             echo '<thead class="bg-lime-700 text-white">';
             echo '<tr>';
             echo '<th class="p-2 border text-[12px]">Mission Header</th>';
@@ -337,18 +338,18 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
                 echo '<th class="p-2 border text-[12px]">Actions</th>';
             }
             if (strtolower($_SESSION['role']) === 'logistics') {
-                echo (isset($_GET['status']) && $_GET['status'] === 'rejected') ? '' : '<th class="p-2 border text-[12px]">Verify</th>';
+                echo (isset($_GET['status']) && $_GET['status'] === 'rejected') ? '<th class="p-2 border text-[12px]">Status</th>' : '<th class="p-2 border text-[12px]">Verify</th>';
             }
 
             echo '</tr></thead><tbody class="bg-white">';
 
             while ($row = $result->fetch_assoc()) {
                 echo '<tr class="border border-b border-black bg-zinc-200 hover:bg-zinc-300">';
-                echo '<td class="text-[12px] border pl-2 text-black">' . htmlspecialchars($row['head_mission']) . '</td>';
-                echo '<td class="text-[12px] border pl-2 text-black">' . htmlspecialchars($row['driver_name']) . '</td>';
-                echo '<td class="text-[12px] border pl-2 text-black">' . htmlspecialchars($row['location_to']) . '</td>';
-                echo '<td class="text-[12px] border pl-2 text-black">' . htmlspecialchars($row['date_from']) . '</td>';
-                echo '<td class="text-[12px] border pl-2 text-black">' . htmlspecialchars($row['fuel_type']) . '</td>';
+                echo '<td class="text-[15px] border p-2 text-black">' . htmlspecialchars($row['head_mission']) . '</td>';
+                echo '<td class="text-[15px] border p-2 text-black">' . htmlspecialchars($row['driver_name']) . '</td>';
+                echo '<td class="text-[15px] border p-2 text-black">' . htmlspecialchars($row['location_to']) . '</td>';
+                echo '<td class="text-[15px] border p-2 text-black">' . htmlspecialchars($row['date_from']) . '</td>';
+                echo '<td class="text-[15px] border p-2 text-black">' . htmlspecialchars($row['fuel_type']) . '</td>';
 
                 if (strtoupper($_SESSION['role']) === 'D/CEO' || strtoupper($_SESSION['role']) === 'CEO') {
                     echo '<td class="p-1 border">';
@@ -372,14 +373,18 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
 
                 if (strtolower($_SESSION['role']) === 'logistics') {
                     if (isset($_GET['status']) && $_GET['status'] === 'rejected') {
-                        echo '';
+                        echo '<td class="p-3 border text-red-500 hover:underline">
+                                        Rejected
+                                  </td>';
                     } else {
-                        if ($row['verified_by'] == '-') {
+                        if ($row['verified_by'] == '-' && $row['status'] == "pending") {
                             echo '<td class="p-3 border">
                                     <button onclick="viewRequest(' . $row['req_id'] . ')" class="text-blue-500 hover:underline">
                                         Verify
                                     </button>
                                   </td>';
+                        } elseif ($row['status'] == "rejected") {
+                            echo '<td class="text-red-600 p-3 border">Rejected</td>';
                         } else {
                             echo '<td class="text-blue-800 p-3 border">Verified</td>';
                         }
@@ -406,6 +411,14 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
                 <div class="bg-white p-6 rounded-lg w-1/3">
                     <h2 class="text-xl font-bold text-gray-700">Request Details</h2>
                     <p id="requestDetails" class="mt-4 text-gray-600"></p>
+                </div>
+            </div>
+
+            <!-- Satatus Modal -->
+            <div id="statusModal" class="fixed inset-0 hidden bg-black bg-opacity-50 flex justify-center items-center">
+                <div class="bg-white p-6 rounded-lg w-1/3">
+                    <h2 class="text-center text-5 font-bold text-gray-700">✅</h2>
+                    <p id="status" class="text-center text-10 capitalize mt-4 text-gray-600"></p>
                 </div>
             </div>
 
@@ -450,11 +463,13 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
          * function for verifying request is remove and placed to approve.php the it differ according to their role LOGISTICS, CEO or D/CEO
          */
 
-
         function cancelRequest(id) {
             fetch(`requests.php?reject=${id}`)
                 .then(response => response.json())
-                .then(data => alert(data.message))
+                .then(data => {
+                    alert(data.message)
+                    window.location = "requests.php"
+                })
             closeModal();
         }
     </script>

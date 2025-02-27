@@ -36,7 +36,7 @@ $dotenv->load();
 <body class="bg-gray-100">
     <div class="flex h-screen">
         <?php
-        include("./components/side.php");
+        include "./components/side.php";
         include "./measures/districts.php";
 
         /**
@@ -58,7 +58,7 @@ $dotenv->load();
 
         ?>
 
-        <form method="post" enctype="multipart/form-data" class="overflow-y-scroll">
+        <form method="post" enctype="multipart/form-data" class="overflow-y-scroll" onsubmit="showLoader()">
             <h2>Fuel Request Management System</h2>
             <div>
                 <p id="response" class="text-red-500"></p>
@@ -97,14 +97,27 @@ $dotenv->load();
             <input type="date" name="return" id="return" required>
             <label for="select">Fuel Type</label>
             <select name="fuel" id="select" class="input-field text-sm sm:text-base" required>
-                <option value="" placeholder="Select Options">Select Options</option>
+                <option value="" placeholder="Select Options">Select Fuel</option>
                 <option value="Diesel">Diesel</option>
                 <option value="Petrol">Petrol</option>
             </select>
             <label for="signature">Head of Mission's Signature</label>
             <input type="file" name="signature" id="signature" accept=".jpg, .jpeg, .png">
             <input type="submit" value="Submit" name="btn">
+
+            <!-- Loader -->
+            <div id="loader" class="hidden mt-4 flex justify-center">
+                <div class="w-8 h-8 border-4 border-blue-500 border-dashed rounded-full animate-spin"></div>
+            </div>
         </form>
+
+        <!-- Modal -->
+        <div id="statusModal" class="fixed inset-0 hidden bg-black bg-opacity-50 flex justify-center items-center">
+            <div class="bg-white p-6 rounded-lg w-1/3">
+                <h2 class="text-center text-5 font-bold text-gray-700">✅</h2>
+                <p id="status" class="mt-4 text-gray-600"></p>
+            </div>
+        </div>
 
         <?php
         if (isset($_POST["btn"])) {
@@ -187,8 +200,8 @@ $dotenv->load();
                                 if (mysqli_query($db, $sql)) {
 
                                     /**
-                                     *   INCLUDING AFRICA'S TOLKING FOR SENDING SMS
                                      * 
+                                     *   INCLUDING AFRICA'S TOLKING FOR SENDING SMS
                                      * 
                                      * */
                                     include "./messages/sendSms.php";
@@ -196,7 +209,9 @@ $dotenv->load();
         ?>
                                     <!-- SENDING ALTER OF SUCCESS REQUEST -->
                                     <script>
-                                        alert("request Sent sucessfull")
+                                        // alert("request Sent sucessfull")
+                                        document.getElementById("statusModal").classList.remove("hidden")
+                                        document.getElementById("status").innerHTML = "request Sent sucessfull"
                                         window.location = "./requests.php";
                                     </script>
                                 <?php
@@ -296,6 +311,16 @@ $dotenv->load();
         let selectedPlate = document.getElementById("plateSelect").value;
         let vehicleTypes = <?php echo json_encode($vehicles); ?>;
         document.getElementById("vehicleType").value = vehicleTypes[selectedPlate] || "";
+    }
+
+    /**
+     * Showing Loader function
+     */
+    function showLoader() {
+        document.querySelector("#select").classList.add("hidden")
+        document.querySelector("input").classList.add("hidden")
+        document.querySelector("#plateSelect").classList.add("hidden")
+        document.getElementById("loader").classList.remove("hidden");
     }
 </script>
 

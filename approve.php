@@ -53,6 +53,8 @@ if (isset($_GET["approve"])) {
                 $stmt->close();
 
                 if ($approve) {
+                    // INCLUDING FILE FOR SENDING SMS TO THE PHONES
+                    include "./messages/sendSms.php";
 ?>
                     <script>
                         alert("Request Approved Successfully")
