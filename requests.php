@@ -308,7 +308,9 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
                 $result = $stmt->get_result();
             }
 
-            // Fetch total number of records
+            /**
+             * Fetch total number of records
+             **/
             $countQuery = ($status === 'all') ? "SELECT COUNT(*) as total FROM fuel_request" : "SELECT COUNT(*) as total FROM fuel_request WHERE status = ?";
             $countStmt = $db->prepare($countQuery);
 
@@ -385,6 +387,10 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
                                   </td>';
                         } elseif ($row['status'] == "rejected") {
                             echo '<td class="text-red-600 p-3 border">Rejected</td>';
+                        } elseif ($row['status'] == "approved") {
+                            echo '<td class="text-green-500 font-bold p-3 border">Approved 
+                            <a href="?id=' . urlencode($row['req_id']) . '" class="text-blue-500 hover:underline ml-2">⬇️ PDF</a>
+                            </td>';
                         } else {
                             echo '<td class="text-blue-800 p-3 border">Verified</td>';
                         }

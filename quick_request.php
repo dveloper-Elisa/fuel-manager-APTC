@@ -65,9 +65,15 @@ $success = "";
 if (isset($_POST['setPrice'])) {
     $fuelType = $_POST['fuelType'] ?? '';
     $price = $_POST['price'] ?? '';
+    $discount = $_POST['discount'] ?? '';
 
     // CALCULATE PRICE DISCOUNT of 40 rwf PER LITER
-    $price -= 40;
+
+    if (empty($price) || $price == "") {
+        $errors[] = "Please Select fuel type";
+    }
+
+
 
 
     if (empty($fuelType) || empty($price)) {
@@ -75,9 +81,10 @@ if (isset($_POST['setPrice'])) {
     } elseif (!is_numeric($price) || $price <= 0) {
         $errors[] = "Invalid price entered.";
     } else {
+        $price -= $discount;
         try {
             // Prepare SQL statement
-            $sql = "UPDATE `fuel` SET `uplt` = ?, `status` = 'active', `date` = NOW() WHERE `type` = ?";
+            $sql = "UPDATE `fuel` SET `uplt` = ?,  `discount` = ?, `status` = 'active', `date` = NOW() WHERE `type` = ?";
             $statement = $db->prepare($sql);
 
             if (!$statement) {
@@ -85,7 +92,7 @@ if (isset($_POST['setPrice'])) {
             }
 
             // Bind parameters (corrected types: price is `double`, fuelType is `string`)
-            $statement->bind_param("ds", $price, $fuelType);
+            $statement->bind_param("dds", $price, $discount, $fuelType);
 
             // Execute query
             if ($statement->execute()) {
@@ -98,6 +105,45 @@ if (isset($_POST['setPrice'])) {
             $statement->close();
         } catch (Exception $e) {
             $errors[] = "Error: " . $e->getMessage();
+        }
+    }
+}
+
+
+
+/**
+ * SENDING OPERATION FUEL
+ */
+
+if (isset($_GET['operation'])) {
+    if (isset($_POST['operation'])) {
+        $fuel = $_POST['fuelType'];
+        $litter = $_POST['litter'];
+        $car = $_POST['car'];
+        $description = $_POST['description'];
+
+        if (empty($fuel) || $fuel == "" || empty($litter) || $litter == "" || empty($description) || $description == "" || empty($car) || $car == "") {
+            $errors[] = "Please Fill all fields";
+        } else {
+
+            try {
+                $status = 'pending';
+                $sql = "INSERT INTO operation (`fuel`, `litter`, `car`, `description`, `status`) VALUES (?, ?, ?, ?, ?)";
+                $statement = $db->prepare($sql);
+
+                if ($statement) {
+                    $statement->bind_param('sssss', $fuel, $litter, $car, $description, $status);
+                    if ($statement->execute()) {
+                        $success = "Operationg Sent Success full";
+                        sleep(3);
+                        return header("location:quick_request.php");
+                    }
+                } else {
+                    $errors[] = "Failed to prepare the SQL statement.";
+                }
+            } catch (PDOException $e) {
+                $errors[] = $e->getMessage();
+            }
         }
     }
 }
@@ -146,138 +192,248 @@ if (isset($_POST['setPrice'])) {
             $sql = "SELECT * FROM `quick_action` LIMIT $limit OFFSET $offset";
             $result = $db->query($sql);
             ?>
+            <div class="flex flex-row gap-3 my-2">
+                <a href="./quick_request.php?price" class="block text-white bg-lime-700 px-2 hover:bg-lime-600 w-fit rounded">
+                    <span class="text-white text-lg">💲</span>Manage Price
+                </a>
+                <a href="./quick_request.php?operation" class="block text-white bg-lime-700 px-2 hover:bg-lime-600 w-fit rounded">
+                    <span class="text-white text-lg"><span class="hover:animate-spin">⚙️</span></span>Operation
+                </a>
+            </div>
 
-            <a href="./quick_request.php?price" class="block text-white bg-lime-800 px-2 hover:bg-lime-600 w-fit rounded">
-                <span class="text-white text-lg">⚡</span>Manage Price
-            </a>
+            <!-- 
+            DISPLAYING OPERATION STATUS 
+            AND DISABELING OTHER OUTPUTS
+            FOR QUICK ACTIONS
+            -->
+            <?php if (isset($_GET['operation-status'])) {
 
-            <div class="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 grid-cols-1 gap-4 p-4">
-                <?php while ($row = $result->fetch_assoc()) : ?>
-                    <div class="bg-white shadow-lg rounded-lg p-4 border border-gray-200 flex flex-row items-center justify-between">
+                $quick = "SELECT * FROM operation";
+                $statement = $db->prepare($quick);
 
-                        <div class="w-fit">
-                            <h3 class="text-md font-bold text-lime-700 capitalize"><?php echo htmlspecialchars($row['head_mission']); ?></h3>
-                            <p class="text-gray-700"><strong>Driver:</strong> <?php echo htmlspecialchars($row['driver']); ?></p>
-                            <p class="text-gray-700"><strong>Plate No:</strong> <?php echo htmlspecialchars($row['plate_no']); ?></p>
-                            <p class="text-gray-700"><strong>Fuel:</strong> <?php echo htmlspecialchars($row['fuel']); ?> Liters</p>
-                            <p class="text-gray-700"><strong>Price:</strong> <?php echo htmlspecialchars($row['price']); ?> RWF</p>
-                            <p class="text-gray-700"><strong>From:</strong> <?php echo htmlspecialchars($row['origin']); ?></p>
-                            <p class="text-gray-700"><strong>To:</strong> <?php echo htmlspecialchars($row['destination']); ?></p>
-                            <p class="text-gray-700"><strong>Description:</strong>
-                                <?php
-                                $descript = (htmlspecialchars($row['description']));
-                                echo (mb_strlen($descript > 100)) ? mb_substr($descript, 0, 50) . '...' : $descript;
-                                ?>
-                            </p>
-                        </div>
-                        <!-- Download PDF Button -->
-                        <div class="text-center mt-6">
-                            <a href="download.php?pdf_id=<?php echo $row['action_id'] ?>" target="_blank" class="bg-blue-900 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition whitespace-nowrap">
-                                ⬇️ PDF
-                            </a>
-                        </div>
+                if ($statement):
+                    $statement->execute();
+                    $result = $statement->get_result();
+            ?>
+
+                    <div class="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 grid-cols-1 gap-4 p-4">
+                        <?php while ($operation = $result->fetch_assoc()) : ?>
+                            <div class="bg-white shadow-lg rounded-lg p-4 border border-gray-200 flex flex-row items-center justify-between">
+
+                                <div class="w-fit">
+                                    <h3 class="text-md font-bold text-lime-700 capitalize">
+                                        <?php echo htmlspecialchars($operation['status']); ?>
+                                    </h3>
+                                    <p class="text-gray-700"><strong>Plate No:</strong> <?php echo htmlspecialchars($operation['car']); ?></p>
+                                    <p class="text-gray-700"><strong>Fuel:</strong> <?php echo htmlspecialchars($operation['fuel']); ?> Liters</p>
+                                    <p class="text-gray-700"><strong>Description:</strong>
+                                        <?php
+                                        $descript = htmlspecialchars($operation['description']);
+                                        echo (mb_strlen($descript) > 100) ? mb_substr($descript, 0, 50) . '...' : $descript;
+                                        ?>
+                                    </p>
+                                </div>
+
+                                <!-- Download PDF Button -->
+                                <!-- <div class="text-center mt-6">
+                                    <a href="download.php?pdf_id=<?php echo htmlspecialchars($operation['action_id']); ?>" target="_blank"
+                                        class="bg-blue-900 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition whitespace-nowrap">
+                                        ⬇️ PDF
+                                    </a>
+                                </div> -->
+
+                            </div>
+                        <?php endwhile; ?>
                     </div>
-                <?php endwhile; ?>
 
-            </div>
-
-            <!-- Pagination Controls -->
-            <div class="flex space-x-2 mt-4">
-                <?php if ($page > 1) : ?>
-                    <a href="?page=<?php echo $page - 1; ?>" class="px-3 py-1 bg-gray-700 text-white rounded-md hover:bg-gray-500">⏮️</a>
-                <?php endif; ?>
-
-                <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
-                    <a href="?page=<?php echo $i; ?>" class="px-3 py-1 rounded-md <?php echo $i == $page ? 'bg-lime-700 text-white' : 'bg-gray-200 hover:bg-gray-300'; ?>">
-                        <?php echo $i; ?>
-                    </a>
-                <?php endfor; ?>
-
-                <?php if ($page < $totalPages) : ?>
-                    <a href="?page=<?php echo $page + 1; ?>" class="px-3 py-1 bg-gray-700 text-white rounded-md hover:bg-gray-500">⏭️</a>
-                <?php endif; ?>
-            </div>
+                <?php
+                endif; // End of if statement
+            } else {
+                ?>
 
 
 
-            <!-- FORM CONTENT AHEAD -->
-            <!-- Main Content -->
-            <div id="popupForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden p-4">
-                <div class="bg-white shadow-lg rounded-lg p-4 sm:p-6 md:p-8 w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl relative max-h-[90vh] overflow-y-auto">
-                    <button id="closeFormBtn" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-xl">&times;</button>
-                    <h2 class="text-lg sm:text-xl md:text-2xl font-semibold text-lime-700 text-center mb-4 sm:mb-6">
-                        Quick Fuel Request Form
-                    </h2>
+                ?>
 
-                    <?php if (!empty($errors)): ?>
-                        <div class="bg-red-100 text-red-700 p-2 sm:p-3 rounded mb-4 text-sm sm:text-base">
-                            <?php foreach ($errors as $error) {
-                                echo "<p>$error</p>";
-                            } ?>
+                <div class="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 grid-cols-1 gap-4 p-4">
+                    <?php while ($row = $result->fetch_assoc()) : ?>
+                        <div class="bg-white shadow-lg rounded-lg p-4 border border-gray-200 flex flex-row items-center justify-between">
+
+                            <div class="w-fit">
+                                <h3 class="text-md font-bold text-lime-700 capitalize"><?php echo htmlspecialchars($row['head_mission']); ?></h3>
+                                <p class="text-gray-700"><strong>Driver:</strong> <?php echo htmlspecialchars($row['driver']); ?></p>
+                                <p class="text-gray-700"><strong>Plate No:</strong> <?php echo htmlspecialchars($row['plate_no']); ?></p>
+                                <p class="text-gray-700"><strong>Fuel:</strong> <?php echo htmlspecialchars($row['fuel']); ?> Liters</p>
+                                <p class="text-gray-700"><strong>Price:</strong> <?php echo htmlspecialchars($row['price']); ?> RWF</p>
+                                <p class="text-gray-700"><strong>From:</strong> <?php echo htmlspecialchars($row['origin']); ?></p>
+                                <p class="text-gray-700"><strong>To:</strong> <?php echo htmlspecialchars($row['destination']); ?></p>
+                                <p class="text-gray-700"><strong>Description:</strong>
+                                    <?php
+                                    $descript = (htmlspecialchars($row['description']));
+                                    echo (mb_strlen($descript > 100)) ? mb_substr($descript, 0, 50) . '...' : $descript;
+                                    ?>
+                                </p>
+                            </div>
+                            <!-- Download PDF Button -->
+                            <div class="text-center mt-6">
+                                <a href="download.php?pdf_id=<?php echo $row['action_id'] ?>" target="_blank" class="bg-blue-900 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition whitespace-nowrap">
+                                    ⬇️ PDF
+                                </a>
+                            </div>
                         </div>
-                    <?php endif; ?>
+                    <?php endwhile; ?>
 
-                    <?php if (!empty($success)): ?>
-                        <div class="bg-green-100 text-green-700 p-2 sm:p-3 rounded mb-4 text-sm sm:text-base">
-                            <?php echo $success; ?>
-                        </div>
-                    <?php endif; ?>
-
-                    <form action="" method="post" class="flex flex-col gap-3 sm:gap-4">
-                        <input type="text" name="header" placeholder="Event Header" class="capitalize input-field text-sm sm:text-base">
-                        <input type="text" name="driver" placeholder="Driver Name" class="capitalize input-field text-sm sm:text-base">
-                        <input type="text" name="plate" placeholder="Plate Number" class="uppercase input-field text-sm sm:text-base">
-                        <select name="fueltype" id="" class="input-field text-sm sm:text-base">
-                            <option value="" placeholder="Select Options">Select Options</option>
-                            <option value="Diesel">Diesel</option>
-                            <option value="Petrol">Petrol</option>
-                        </select>
-                        <input type="number" min=1 name="fuel_littel" placeholder="Fuel Litter" class="input-field text-sm sm:text-base">
-                        <input type="text" name="origin" placeholder="From" class="input-field text-sm sm:text-base">
-                        <input type="text" name="destin" placeholder="Destination" class="input-field text-sm sm:text-base">
-                        <textarea name="description" placeholder="Write Description" class="input-field h-20 sm:h-24 text-sm sm:text-base"></textarea>
-                        <button type="submit" name="quick_request" class="bg-lime-700 text-white py-2 rounded-lg hover:bg-lime-800 transition text-sm sm:text-base">
-                            Send Request
-                        </button>
-                    </form>
                 </div>
-            </div>
 
-            <!-- POPUP FOR MANAGING FUEL PRICE -->
-            <div id="popupPrice" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center 
+                <!-- Pagination Controls -->
+                <div class="flex space-x-2 mt-4">
+                    <?php if ($page > 1) : ?>
+                        <a href="?page=<?php echo $page - 1; ?>" class="px-3 py-1 bg-gray-700 text-white rounded-md hover:bg-gray-500">⏮️</a>
+                    <?php endif; ?>
+
+                    <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
+                        <a href="?page=<?php echo $i; ?>" class="px-3 py-1 rounded-md <?php echo $i == $page ? 'bg-lime-700 text-white' : 'bg-gray-200 hover:bg-gray-300'; ?>">
+                            <?php echo $i; ?>
+                        </a>
+                    <?php endfor; ?>
+
+                    <?php if ($page < $totalPages) : ?>
+                        <a href="?page=<?php echo $page + 1; ?>" class="px-3 py-1 bg-gray-700 text-white rounded-md hover:bg-gray-500">⏭️</a>
+                    <?php endif; ?>
+                </div>
+
+
+
+                <!-- FORM CONTENT AHEAD -->
+                <!-- Main Content -->
+                <div id="popupForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden p-4">
+                    <div class="bg-white shadow-lg rounded-lg p-4 sm:p-6 md:p-8 w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl relative max-h-[90vh] overflow-y-auto">
+                        <button id="closeFormBtn" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-xl">&times;</button>
+                        <h2 class="text-lg sm:text-xl md:text-2xl font-semibold text-lime-700 text-center mb-4 sm:mb-6">
+                            Quick Fuel Request Form
+                        </h2>
+
+                        <?php if (!empty($errors)): ?>
+                            <div class="bg-red-100 text-red-700 p-2 sm:p-3 rounded mb-4 text-sm sm:text-base">
+                                <?php foreach ($errors as $error) {
+                                    echo "<p>$error</p>";
+                                } ?>
+                            </div>
+                        <?php endif; ?>
+
+                        <?php if (!empty($success)): ?>
+                            <div class="bg-green-100 text-green-700 p-2 sm:p-3 rounded mb-4 text-sm sm:text-base">
+                                <?php echo $success; ?>
+                            </div>
+                        <?php endif; ?>
+
+                        <form action="" method="post" class="flex flex-col gap-3 sm:gap-4">
+                            <input type="text" name="header" placeholder="Event Header" class="capitalize input-field text-sm sm:text-base">
+                            <input type="text" name="driver" placeholder="Driver Name" class="capitalize input-field text-sm sm:text-base">
+                            <input type="text" name="plate" placeholder="Plate Number" class="uppercase input-field text-sm sm:text-base">
+                            <select name="fueltype" id="" class="input-field text-sm sm:text-base">
+                                <option value="" placeholder="Select Options">-- Select Options --</option>
+                                <option value="Diesel">Diesel</option>
+                                <option value="Petrol">Petrol</option>
+                            </select>
+                            <input type="number" min=1 name="fuel_littel" placeholder="Fuel Litter" class="input-field text-sm sm:text-base">
+                            <input type="text" name="origin" placeholder="From" class="input-field text-sm sm:text-base">
+                            <input type="text" name="destin" placeholder="Destination" class="input-field text-sm sm:text-base">
+                            <textarea name="description" placeholder="Write Description" class="input-field h-20 sm:h-24 text-sm sm:text-base"></textarea>
+                            <button type="submit" name="quick_request" class="bg-lime-700 text-white py-2 rounded-lg hover:bg-lime-800 transition text-sm sm:text-base">
+                                Send Request
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- POPUP FOR MANAGING FUEL PRICE -->
+
+                <div id="popupPrice" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center 
                 <?php echo isset($_GET['price']) ? '' : 'hidden'; ?> p-4">
-                <div class="bg-white shadow-lg rounded-lg p-4 sm:p-6 md:p-8 w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl relative max-h-[90vh] overflow-y-auto">
-                    <button id="closeFormBt" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-xl">&times;</button>
-                    <h2 class="text-lg sm:text-xl md:text-2xl font-semibold text-lime-700 text-center mb-4 sm:mb-6">
-                        Update Fuel prices
-                    </h2>
+                    <div class="bg-white shadow-lg rounded-lg p-4 sm:p-6 md:p-8 w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl relative max-h-[90vh] overflow-y-auto">
+                        <button id="closeFormBt" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-xl">&times;</button>
+                        <h2 class="text-lg sm:text-xl md:text-2xl font-semibold text-lime-700 text-center mb-4 sm:mb-6">
+                            Update Fuel prices
+                        </h2>
 
-                    <?php if (!empty($errors)): ?>
-                        <div class="bg-red-100 text-red-700 p-2 sm:p-3 rounded mb-4 text-sm sm:text-base">
-                            <?php foreach ($errors as $error) {
-                                echo "<p>$error</p>";
-                            } ?>
-                        </div>
-                    <?php endif; ?>
+                        <?php if (!empty($errors)): ?>
+                            <div class="bg-red-100 text-red-700 p-2 sm:p-3 rounded mb-4 text-sm sm:text-base">
+                                <?php foreach ($errors as $error) {
+                                    echo "<p>$error</p>";
+                                } ?>
+                            </div>
+                        <?php endif; ?>
 
-                    <?php if (!empty($success)): ?>
-                        <div class="bg-green-100 text-green-700 p-2 sm:p-3 rounded mb-4 text-sm sm:text-base">
-                            <?php echo $success; ?>
-                        </div>
-                    <?php endif; ?>
+                        <?php if (!empty($success)): ?>
+                            <div class="bg-green-100 text-green-700 p-2 sm:p-3 rounded mb-4 text-sm sm:text-base">
+                                <?php echo $success; ?>
+                            </div>
+                        <?php endif; ?>
 
-                    <form action="" method="post" class="flex flex-col gap-3 sm:gap-4">
-                        <select name="fuelType" class="input-field text-sm sm:text-base">
-                            <option value="Diesel">Diesel</option>
-                            <option value="Petrol">Petrol</option>
-                        </select>
-                        <input type="number" min=1 name="price" placeholder="Update price" class="input-field text-sm sm:text-base">
-                        <button type="submit" name="setPrice" class="bg-lime-700 text-white py-2 rounded-lg hover:bg-lime-800 transition text-sm sm:text-base">
-                            Set Price
-                        </button>
-                    </form>
+                        <form action="" method="post" class="flex flex-col gap-3 sm:gap-4">
+                            <select name="fuelType" id="fuelType" class="input-field text-sm sm:text-base">
+                                <option value="">-- Select Fuel --</option>
+                                <option value="Diesel">Diesel</option>
+                                <option value="Petrol">Petrol</option>
+                            </select>
+                            <input type="number" min=1 name="price" placeholder="Update price" class="input-field text-sm sm:text-base">
+                            <input type="number" min=1 name="discount" id="discount" placeholder="Discount" class="input-field text-sm sm:text-base">
+                            <button type="submit" name="setPrice" class="bg-lime-700 text-white py-2 rounded-lg hover:bg-lime-800 transition text-sm sm:text-base">
+                                Set Price
+                            </button>
+                        </form>
+                    </div>
                 </div>
-            </div>
+
+                <!-- MANAGE OPERATION POPUP -->
+                <div id="popupOperation" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center 
+                <?php echo isset($_GET['operation']) ? '' : 'hidden'; ?> p-4">
+                    <div class="bg-white shadow-lg rounded-lg p-4 sm:p-6 md:p-8 w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl relative max-h-[90vh] overflow-y-auto">
+                        <button id="closeFormBtn" class="hover:text-red-500 hover:font-bold absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-xl z-9">&times;</button>
+                        <h2 class="text-lg sm:text-xl md:text-2xl font-semibold text-lime-700 text-center mb-4 sm:mb-6">
+                            Request for Operation fuel
+                        </h2>
+
+                        <?php if (!empty($errors)): ?>
+                            <div class="bg-red-100 text-red-700 p-2 sm:p-3 rounded mb-4 text-sm sm:text-base">
+                                <?php foreach ($errors as $error) {
+                                    echo "<p>$error</p>";
+                                }
+                                sleep(3);
+                                ?>
+                            </div>
+                        <?php endif; ?>
+
+                        <?php if (!empty($success)): ?>
+                            <div class="bg-green-100 text-green-700 p-2 sm:p-3 rounded mb-4 text-sm sm:text-base">
+                                <?php echo $success;
+                                sleep(3);
+                                ?>
+                            </div>
+                        <?php endif; ?>
+
+                        <form action="" method="post" class="flex flex-col gap-3 sm:gap-4">
+                            <select name="fuelType" id="fuelType" class="input-field text-sm sm:text-base">
+                                <option value="">-- Select Fuel --</option>
+                                <option value="Diesel">Diesel</option>
+                                <option value="Petrol">Petrol</option>
+                            </select>
+                            <input type="number" min=1 name="litter" placeholder="Number of Littres" class="input-field text-sm sm:text-base">
+                            <select name="car" id="fuelType" class="input-field text-sm sm:text-base">
+                                <option value="">-- Select Car --</option>
+                                <option value="RDF697S">RDF697S</option>
+                                <option value="RDF198P">RDF198P</option>
+                            </select>
+                            <textarea name="description" class="input-field h-20 sm:h-24 text-sm sm:text-base"></textarea>
+                            <button type="submit" name="operation" class="bg-lime-700 text-white py-2 rounded-lg hover:bg-lime-800 transition text-sm sm:text-base">
+                                Send Request
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            <?php } ?>
         </div>
     </div>
 
@@ -314,6 +470,30 @@ if (isset($_POST['setPrice'])) {
 
         document.getElementById('closeFormBt').addEventListener('click', function() {
             document.getElementById('popupPrice').classList.add('hidden');
+
+        });
+
+        document.getElementById('closeFormBtn').addEventListener("click", () => {
+            alert("Clicked clox")
+        })
+
+        // UPDATING PRICES WITHIN FORM
+
+        document.getElementById('fuelType').addEventListener('change', function() {
+            let fuelType = this.value;
+
+            if (fuelType) {
+                fetch('get_discount.php?fuelType=' + fuelType)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('discount').value = data.discount || 0;
+                        document.getElementById('discount').disabled = false;
+                    })
+                    .catch(error => console.error('Error fetching discount:', error));
+            } else {
+                document.getElementById('discount').value = '';
+                document.getElementById('discount').disabled = true;
+            }
         });
     </script>
 </body>

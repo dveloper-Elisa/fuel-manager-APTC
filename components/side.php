@@ -24,12 +24,15 @@
             </li>
             <?php
             echo (strtoupper($_SESSION['role']) === 'LOGISTICS') ? '<li class="mb-2">
-                <a href="./quick_request.php" class="block hover:bg-lime-600 rounded">
-                    <span class="text-white text-lg">⚡</span>QuickAct 
+                <a href="./quick_request.php" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
+                    ⚡QuickAct 
+                </a>
+                <a href="./quick_request.php?operation-status" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
+                    🛠️Operations 
                 </a>
             </li> ' : (strtoupper($_SESSION['role'] === 'D/CEO') || strtoupper($_SESSION['role'] === 'CEO') ? '<li class="mb-2">
-                <a href="./quick_history.php" class="block hover:bg-lime-600 rounded">
-                    <span class="text-white text-lg">🔄</span>History 
+                <a href="./quick_history.php" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
+                    🔄 History 
                 </a>
             </li>' : "");
             ?>

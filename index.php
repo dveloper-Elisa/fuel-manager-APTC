@@ -205,7 +205,6 @@ $dotenv->load();
                                      * 
                                      * */
                                     include "./messages/sendSms.php";
-
         ?>
                                     <!-- SENDING ALTER OF SUCCESS REQUEST -->
                                     <script>
