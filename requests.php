@@ -466,7 +466,8 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
         }
 
         /**
-         * function for verifying request is remove and placed to approve.php the it differ according to their role LOGISTICS, CEO or D/CEO
+         * function for verifying request is removed and placed to approve.php and
+         * they it differ according to their role LOGISTICS, CEO or D/CEO
          */
 
         function cancelRequest(id) {

@@ -34,7 +34,9 @@ require 'connection.php';
                 </div>
             </div>
 
-            <!-- DISPLAYING THE DATA FROM QUICK_ACTION IN CARDS AND ADD BUTTON FOR DOWNLOADING PDF -->
+            <!-- 
+            DISPLAYING THE DATA FROM QUICK_ACTION IN CARDS AND ADD BUTTON FOR DOWNLOADING PDF 
+            -->
             <?php
             $limit = 6;
             $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;

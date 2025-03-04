@@ -34,6 +34,9 @@
                 <a href="./quick_history.php" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
                     🔄 History 
                 </a>
+                <a href="./quick_request.php?operation-status" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
+                    🛠️Operations 
+                </a>
             </li>' : "");
             ?>
             <li class="mb-2">
