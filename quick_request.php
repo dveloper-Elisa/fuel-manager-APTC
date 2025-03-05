@@ -154,6 +154,40 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
             }
         }
     }
+
+    /**
+     * STORING OPERATION REPORT FOR HOW FUEL WERE USED
+     */
+
+    if (isset($_GET['operation-report']) && isset($_POST['op_report'])) {
+        $driver = $_POST['op_driver'];
+        $from = $_POST['op_origin'];
+        $to = $_POST['op_destin'];
+        $date = $_POST['op_date'];
+        $description = $_POST['op_description'];
+
+        if (empty($driver) || $driver == "" || empty($from) || $from == "" || empty($to) || $to == "" || empty($date) || $date == "" || empty($description) || $description == "") {
+            $errors[] = "Fill All fields please";
+        } else {
+            /**
+             * INSERTING DATA INTO DATABASE
+             */
+            try {
+
+                $sql = "INSERT INTO `operation_report` (`driver`, `op_from`, `op_to`, `date`, `description`) VALUES (?, ?, ?, ?, ?)";
+                $stmt = $db->prepare($sql);
+                $stmt->bind_param("sssss", $driver, $from, $to, $date, $description);
+                if ($stmt->execute()) {
+                    $success = "Reported success fully";
+                } else {
+                    $errors[] = "Report not created";
+                }
+            } catch (PDOException $e) {
+                return $errors[] = $e->getMessage();
+            }
+        }
+    }
+
     ?>
 
 
@@ -210,6 +244,9 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                         </a>
                         <a href="./quick_request.php?operation" class="block text-white bg-lime-700 px-2 hover:bg-lime-600 w-fit rounded">
                             <span class="text-white text-lg">⚙️</span>Operation
+                        </a>
+                        <a href="./quick_request.php?operation-report" class="block text-white bg-lime-700 px-2 hover:bg-lime-600 w-fit rounded">
+                            <span class="text-white text-lg">📑</span>Report
                         </a>
                     </div>
 
@@ -297,6 +334,8 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
 
                             $stmt->close();
                         }
+
+
                     ?>
 
                         <div class="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 grid-cols-1 gap-4 p-4">
@@ -358,10 +397,78 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                             <?php endwhile; ?>
                         </div>
 
+
+
                     <?php
                     endif; // End of if statement
-                } else {
+                } else if (isset($_GET['operation-report'])) {
+                    // include "./get_report.php";
                     ?>
+                    <!-- FORM CONTENT AHEAD -->
+                    <!-- Main Content -->
+                    <div id="popupForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center  p-4">
+                        <div class="bg-white shadow-lg rounded-lg p-4 sm:p-6 md:p-8 w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl relative max-h-[90vh] overflow-y-auto">
+                            <button id="closeFormBtn" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-xl">&times;</button>
+                            <h2 class="text-lg sm:text-xl md:text-2xl font-semibold text-lime-700 text-center mb-4 sm:mb-6">
+                                Make Operation Report
+                            </h2>
+
+                            <?php if (!empty($errors)): ?>
+                                <div class="bg-red-100 text-red-700 p-2 sm:p-3 rounded mb-4 text-sm sm:text-base">
+                                    <?php foreach ($errors as $error) {
+                                        echo "<p>$error</p>";
+                                    } ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (!empty($success)): ?>
+                                <div class="bg-green-100 text-green-700 p-2 sm:p-3 rounded mb-4 text-sm sm:text-base">
+                                    <?php echo $success; ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <form action="" method="post" class="flex flex-col gap-3 sm:gap-4">
+                                <input type="text" name="op_driver" placeholder="Driver Name" class="capitalize input-field text-sm sm:text-base">
+                                <input type="text" name="op_origin" placeholder="From" class="input-field text-sm sm:text-base">
+                                <input type="text" name="op_destin" placeholder="Destination" class="input-field text-sm sm:text-base">
+                                <input type="date" name="op_date" id="" class="input-field text-sm sm:text-base">
+                                <textarea name="op_description" placeholder="Write Description" class="input-field h-20 sm:h-24 text-sm sm:text-base"></textarea>
+                                <button type="submit" name="op_report" class="bg-lime-700 text-white py-2 rounded-lg hover:bg-lime-800 transition text-sm sm:text-base">
+                                    Make report
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <script>
+                        document.getElementById("showFormBtn").addEventListener("click", function() {
+                            document.getElementById("popupForm").classList.remove("hidden");
+                        });
+
+                        document.getElementById("closeFormBtn").addEventListener("click", function() {
+                            document.getElementById("popupForm").classList.add("hidden");
+                            window.location = "quick_request.php?operation-status";
+
+                        });
+
+                        // Close popup when clicking outside the form
+                        document.getElementById("popupForm").addEventListener("click", function(event) {
+                            if (event.target === this) {
+                                this.classList.add("hidden");
+                                window.location = "quick_request.php?operation-status";
+                            }
+                        });
+
+                        document.getElementById('closeFormBt').addEventListener('click', function() {
+                            document.getElementById('popupPrice').classList.add('hidden');
+                            window.location = "quick_request.php?operation-status";
+
+                        });
+                    </script>
+
+                <?php
+                } else {
+                ?>
 
                     <div class="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 grid-cols-1 gap-4 p-4">
                         <?php while ($row = $result->fetch_assoc()) : ?>
@@ -409,8 +516,6 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                             <a href="?page=<?php echo $page + 1; ?>" class="px-3 py-1 bg-gray-700 text-white rounded-md hover:bg-gray-500">⏭️</a>
                         <?php endif; ?>
                     </div>
-
-
 
                     <!-- FORM CONTENT AHEAD -->
                     <!-- Main Content -->
@@ -539,6 +644,22 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                                 </button>
                             </form>
                         </div>
+                        <script>
+                            document.getElementById("closeFormBtn").addEventListener("click", function() {
+                                document.getElementById("popupOperation").classList.add("hidden");
+                            });
+
+                            document.getElementById("closeFormBtn").addEventListener("click", function() {
+                                document.getElementById("closeFormBtn").classList.add("hidden");
+                            });
+
+                            // Close popup when clicking outside the form
+                            document.getElementById("popupOperation").addEventListener("click", function(event) {
+                                if (event.target === this) {
+                                    this.classList.add("hidden");
+                                }
+                            });
+                        </script>
                     </div>
 
                 <?php } ?>
@@ -567,23 +688,25 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
 
             document.getElementById("closeFormBtn").addEventListener("click", function() {
                 document.getElementById("popupForm").classList.add("hidden");
+                window.location = "quick_request.php?operation-status";
+
             });
 
             // Close popup when clicking outside the form
             document.getElementById("popupForm").addEventListener("click", function(event) {
                 if (event.target === this) {
                     this.classList.add("hidden");
+                    window.location = "quick_request.php?operation-status";
+
                 }
             });
 
             document.getElementById('closeFormBt').addEventListener('click', function() {
                 document.getElementById('popupPrice').classList.add('hidden');
+                window.location = "quick_request.php";
+
 
             });
-
-            document.getElementById('closeFormBtn').addEventListener("click", () => {
-                alert("Clicked clox")
-            })
 
             // UPDATING PRICES WITHIN FORM
 
