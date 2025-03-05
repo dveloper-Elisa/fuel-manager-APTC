@@ -128,22 +128,25 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
             $litter = $_POST['litter'];
             $car = $_POST['car'];
             $description = $_POST['description'];
+            $prepared_by = $_SESSION['name'];
+            $date = date('Y-m-d H:i:s');
 
-            if (empty($fuel) || $fuel == "" || empty($litter) || $litter == "" || empty($description) || $description == "" || empty($car) || $car == "") {
-                $errors[] = "Please Fill all fields";
+            if (empty($fuel) || empty($litter) || empty($description) || empty($car)) {
+                $errors[] = "Please fill all fields.";
             } else {
-
                 try {
                     $status = 'pending';
-                    $sql = "INSERT INTO operation (`fuel`, `litter`, `car`, `description`, `status`) VALUES (?, ?, ?, ?, ?)";
+                    $sql = "INSERT INTO operation (`fuel`, `litter`, `car`, `description`, `prepared_by`, `created_at`, `status`) 
+                            VALUES (?, ?, ?, ?, ?, ?, ?)";
                     $statement = $db->prepare($sql);
 
                     if ($statement) {
-                        $statement->bind_param('sssss', $fuel, $litter, $car, $description, $status);
+                        $statement->bind_param('sssssss', $fuel, $litter, $car, $description, $prepared_by, $date, $status);
                         if ($statement->execute()) {
-                            $success = "Operationg Sent Success full";
+                            $success = "Operation sent successfully!";
                             sleep(3);
-                            return header("location:quick_request.php");
+                            header("Location: quick_request.php");
+                            exit();
                         }
                     } else {
                         $errors[] = "Failed to prepare the SQL statement.";
@@ -258,9 +261,23 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                     <?php
                 endif;
 
-                if (isset($_GET['operation-status']) || isset($_GET['approval']) || isset($_GET['reject'])) {
+                if (isset($_GET['operation-status']) || isset($_GET['approval']) || isset($_GET['reject']) || isset($_GET['page'])) {
 
-                    $quick = "SELECT * FROM operation";
+                    $items_per_page = 6;
+
+                    // Get the current page from the URL, defaulting to 1 if not set
+                    $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+
+                    // Calculate the offset (number of items to skip)
+                    $offset = ($current_page - 1) * $items_per_page;
+
+                    // Fetch the total number of rows in the operation table
+                    $total_result = $db->query("SELECT COUNT(*) as total FROM operation");
+                    $total_row = $total_result->fetch_assoc();
+                    $total_items = $total_row['total'];
+
+                    // Fetch the results for the current page
+                    $quick = "SELECT * FROM operation LIMIT $items_per_page OFFSET $offset";
                     $statement = $db->prepare($quick);
 
                     $success = "";
@@ -275,6 +292,7 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
 
                         if (isset($_GET['approval'])) {
                             $approvalId = $_GET['approval'];
+                            $date = date('Y-m-d H:i:s');
 
                             // Check if ID exists
                             $stmt = $db->prepare("SELECT * FROM operation WHERE id = ?");
@@ -286,7 +304,7 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                                 $errors[] = "Approval ID not found";
                             } else {
                                 // Update status using prepared statement
-                                $updateStmt = $db->prepare("UPDATE operation SET status = 'approved' WHERE id = ?");
+                                $updateStmt = $db->prepare("UPDATE operation SET status = 'approved', created_at ='$date'  WHERE id = ?");
                                 $updateStmt->bind_param("i", $approvalId);
                                 $approve = $updateStmt->execute();
 
@@ -341,15 +359,11 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                         <div class="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 grid-cols-1 gap-4 p-4">
                             <?php while ($operation = $result->fetch_assoc()) : ?>
                                 <div class="bg-white shadow-lg rounded-lg p-4 border border-gray-200 flex flex-row items-center justify-between">
-
                                     <div class="w-fit">
                                         <?php if (!empty($errors)): ?>
                                             <div class="bg-red-100 text-red-700 p-2 sm:p-3 rounded mb-4 text-sm sm:text-base">
-                                                <?php
-                                                foreach ($errors as $error):
-                                                    echo "<p>$error</p>";
-                                                endforeach
-                                                ?>
+                                                <?php foreach ($errors as $error): echo "<p>$error</p>";
+                                                endforeach ?>
                                             </div>
                                         <?php endif; ?>
 
@@ -362,7 +376,9 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                                             <?php echo htmlspecialchars($operation['status']); ?>
                                         </h3>
                                         <p class="text-gray-700"><strong>Plate No:</strong> <?php echo htmlspecialchars($operation['car']); ?></p>
-                                        <p class="text-gray-700"><strong>Fuel:</strong> <?php echo htmlspecialchars($operation['fuel']); ?> Liters</p>
+                                        <p class="text-gray-700"><strong>Fuel:</strong> <?php echo htmlspecialchars($operation['fuel']); ?> </p>
+                                        <p class="text-gray-700"><strong>Amount:</strong> <?php echo htmlspecialchars($operation['litter']); ?> Liters</p>
+                                        <p class="text-gray-700"><strong>Requested By:</strong> <?php echo htmlspecialchars($operation['prepared_by']); ?></p>
                                         <p class="text-gray-700"><strong>Description:</strong>
                                             <?php
                                             $descript = htmlspecialchars($operation['description']);
@@ -371,37 +387,56 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                                         </p>
                                     </div>
 
-                                    <!-- 
-                                DISPLAYING CONTROL BUTTONS FOR APPROVING OR REJECTING OPERATION REQUEST BY CEO
-                                -->
+                                    <!-- Displaying control buttons for approving or rejecting operation request by CEO -->
                                     <div class="flex flex-col gap-5">
                                         <?php
-
                                         if ($operation['status'] == 'approved') {
-
-                                            echo "<span>✅</span>";
+                                        ?>
+                                            <span><a target="_blank" href="reportPdf.php?down-operation=<?php echo $operation['id']; ?>"> <span class="material-icons text-[20px text-red-500" title="Download Pdf">picture_as_pdf</span></a></span>
+                                        <?php
                                         } elseif ($operation['status'] == 'rejected') {
                                             echo "<span>🚫</span>";
                                         }
 
-                                        if ($operation['status'] == "pending" && $role === 'D/CEO' || $role === "CEO"):
-
+                                        if ($operation['status'] == "pending" && ($role === 'D/CEO' || $role === "CEO")):
                                         ?>
-                                            <a href="?approval=<?php echo $operation['id']; ?>" class="px-2 py-1 bg-lime-700 text-white rounded-md">Aprove</a>
+                                            <a href="?approval=<?php echo $operation['id']; ?>" class="px-2 py-1 bg-lime-700 text-white rounded-md">Approve</a>
                                             <a href="?reject=<?php echo $operation['id']; ?>" class="px-2 py-1 bg-red-700 text-white rounded-md">Reject</a>
-
                                         <?php endif; ?>
                                     </div>
-
                                 </div>
                             <?php endwhile; ?>
                         </div>
 
                     <?php
-                    endif; // End of if statement
-                } else if (isset($_GET['operation-report'])) {
-                    // include "./get_report.php";
+                        // Pagination: Calculate total pages
+                        $total_pages = ceil($total_items / $items_per_page);
+
+                        // Pagination controls
+                        echo '<div class="pagination">';
+                        echo '<ul class="flex justify-center gap-4">';
+                        if ($current_page > 1) {
+                            echo '<li><a href="?page=' . ($current_page - 1) . '" class="text-blue-500 hover:underline">Previous</a></li>';
+                        }
+                        for ($page = 1; $page <= $total_pages; $page++) {
+                            if ($page == $current_page) {
+                                echo '<li class="font-bold">' . $page . '</li>';
+                            } else {
+                                echo '<li><a href="?page=' . $page . '" class="text-blue-500 hover:underline">' . $page . '</a></li>';
+                            }
+                        }
+                        if ($current_page < $total_pages) {
+                            echo '<li><a href="?page=' . ($current_page + 1) . '" class="text-blue-500 hover:underline">Next</a></li>';
+                        }
+                        echo '</ul>';
+                        echo '</div>';
+
+                    endif;
                     ?>
+
+                <?php
+                } else if (isset($_GET['operation-report'])) {
+                ?>
                     <!-- FORM CONTENT AHEAD -->
                     <!-- Main Content -->
                     <div id="popupForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center  p-4">

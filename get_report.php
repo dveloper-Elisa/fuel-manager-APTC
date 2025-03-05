@@ -101,7 +101,6 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
         <title>Operation report</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     </head>
 
@@ -115,8 +114,6 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                     <h1 class="text-xl font-semibold text-lime-700 flex flex-row items-center gap-2"><i class="fa-solid fa-home"></i> <span class="lg:flex md:flex sm:flex hidden">Operation Report</span></h1>
                     <div class="flex items-center space-x-4">
                         <span class="text-gray-600"> <?php echo "<b>" . $_SESSION["name"] . "</b>"; ?></span>
-                        <!-- <?php echo (strtoupper($_SESSION['role']) == 'LOGISTICS') ?
-                                    '<button id="showFormBtn" class="bg-lime-700 text-white py-2 px-4 rounded-lg hover:bg-lime-800 transition" alt="Send Quick"> Quick Act </button>' : ''; ?> -->
                     </div>
 
                 </div>
@@ -128,13 +125,27 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                 <h2 class="text-capitalize font-bold text-[15px] md:text-[20px] lg:text-[30px] sm:text-[15px] py-5 bg-slate-200 flex items-center justify-center gap-10" style="font-family:Bodoni MT Black;"><span>OPERATION FUEL REPORT </span>
                     <a target="_blank" href="reportPdf.php"> <span class="material-icons text-[20px text-red-500" title="Download Pdf">picture_as_pdf</span></a>
                 </h2>
-
                 <?php
+                // Number of items per page
+                $items_per_page = 6;
 
-                $result = mysqli_query($db, "SELECT * FROM operation_report ORDER BY date DESC");
+                // Get the current page from the URL, defaulting to 1 if not set
+                $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+
+                // Calculate the offset (number of items to skip)
+                $offset = ($current_page - 1) * $items_per_page;
+
+                // Fetch the total number of rows in the operation_report table
+                $total_result = mysqli_query($db, "SELECT COUNT(*) as total FROM operation_report");
+                $total_row = mysqli_fetch_assoc($total_result);
+                $total_items = $total_row['total'];
+
+                // Fetch the results for the current page
+                $result = mysqli_query($db, "SELECT * FROM operation_report ORDER BY date DESC LIMIT $items_per_page OFFSET $offset");
                 if (!$result) {
                     return;
                 }
+
                 // Render the HTML table with overflow-x-scroll
                 echo '<div class="w-[100%] overflow-x-auto border border-gray-300">';
                 echo '<table class="min-w-max w-full border-collapse border border-gray-400 text-left text-gray-700">';
@@ -166,9 +177,9 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
 
                     if (strtolower($_SESSION['role']) === 'logistics') {
                         echo '<td class="flex flex-col items-center gap-2">
-                    <a href="?edit=' . urlencode($row['op_id']) . '" class="text-blue-500 hover:underline"><i class="fas fa-edit" title="Edit"></i></a> 
-                    <a href="?delete=' . urlencode($row['op_id']) . '" class="text-red-500 hover:underline"><i class="fas fa-trash-alt" title="Delete"></i></a> 
-                    </td>';
+            <a href="?edit=' . urlencode($row['op_id']) . '" class="text-blue-500 hover:underline"><i class="fas fa-edit" title="Edit"></i></a> 
+            <a href="?delete=' . urlencode($row['op_id']) . '" class="text-red-500 hover:underline"><i class="fas fa-trash-alt" title="Delete"></i></a> 
+            </td>';
                     }
 
                     echo '</tr>';
@@ -176,11 +187,34 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                 }
 
                 echo '</tbody></table> </div>';
+
+                // Pagination: Calculate total pages
+                $total_pages = ceil($total_items / $items_per_page);
+
+                // Pagination controls
+                echo '<div class="pagination">';
+                echo '<ul class="flex justify-center gap-4">';
+                if ($current_page > 1) {
+                    echo '<li><a href="?page=' . ($current_page - 1) . '" class="text-blue-500 hover:underline">Previous</a></li>';
+                }
+                for ($page = 1; $page <= $total_pages; $page++) {
+                    if ($page == $current_page) {
+                        echo '<li class="font-bold">' . $page . '</li>';
+                    } else {
+                        echo '<li><a href="?page=' . $page . '" class="text-blue-500 hover:underline">' . $page . '</a></li>';
+                    }
+                }
+                if ($current_page < $total_pages) {
+                    echo '<li><a href="?page=' . ($current_page + 1) . '" class="text-blue-500 hover:underline">Next</a></li>';
+                }
+                echo '</ul>';
+                echo '</div>';
                 ?>
+
                 <!-- 
-FORM FOR PERFORMING UPDATE
-FOR UPDATING REQUEST 
--->
+                FORM FOR PERFORMING UPDATE
+                FOR UPDATING REQUEST 
+                -->
 
                 <div id="popupForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center <?php echo isset($_GET['edit']) ? "" : "hidden" ?> p-4">
                     <?php

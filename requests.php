@@ -367,7 +367,7 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
                     }
 
                     if ($row['status'] === 'approved') {
-                        echo '<a href="?id=' . urlencode($row['req_id']) . '" class="text-blue-500 hover:underline ml-2">⬇️ PDF</a>';
+                        echo '<a target="_blank" href="?id=' . urlencode($row['req_id']) . '" class="text-blue-500 hover:underline ml-2 flex flex-row gap-2 items-center"><span class="material-icons text-[20px text-blue-500" title="Download Pdf">picture_as_pdf</span></a>';
                     } else {
                         echo '<span class="text-gray-400 ml-2 cursor-not-allowed">⬇️ PDF</span>';
                     }
@@ -390,7 +390,7 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
                             echo '<td class="text-red-600 p-3 border">Rejected</td>';
                         } elseif ($row['status'] == "approved") {
                             echo '<td class="text-green-500 font-bold p-3 border">Approved 
-                            <a href="?id=' . urlencode($row['req_id']) . '" class="text-blue-500 hover:underline ml-2">⬇️ PDF</a>
+                            <a target="_blank" href="?id=' . urlencode($row['req_id']) . '" class="text-blue-500 hover:underline ml-2 flex flex-row gap-2 items-center"><span class="material-icons text-[20px text-blue-500" title="Download Pdf">picture_as_pdf</span></a>
                             </td>';
                         } else {
                             echo '<td class="text-blue-800 p-3 border">Verified</td>';

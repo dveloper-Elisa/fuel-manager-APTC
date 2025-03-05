@@ -7,6 +7,8 @@
 <aside id="sidebar" class="z-30 w-0 bg-lime-700 text-white p-5 transition-all duration-300 md:w-fit md:block hidden">
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
 
     <!-- Navigation -->
     <nav id="nav" class="ml-5">
