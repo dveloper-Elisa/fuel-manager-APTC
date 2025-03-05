@@ -25,20 +25,23 @@
             <?php
             echo (strtoupper($_SESSION['role']) === 'LOGISTICS') ? '<li class="mb-2">
                 <a href="./quick_request.php" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
-                    ⚡QuickAct 
+                    <i class="fas fa-forward"></i> QuickAct 
                 </a>
                 <a href="./quick_request.php?operation-status" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
-                    🛠️Operations 
+                    <i class="fas fa-cogs"></i> Operations 
                 </a>
                 <a href="./get_report.php" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
-                    📑Reports
+                    <i class="fas fa-chart-bar"></i> Reports
                 </a>
             </li> ' : (strtoupper($_SESSION['role'] === 'D/CEO') || strtoupper($_SESSION['role'] === 'CEO') ? '<li class="mb-2">
                 <a href="./quick_history.php" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
                     🔄 History 
                 </a>
                 <a href="./quick_request.php?operation-status" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
-                    🛠️Operations 
+                    <i class="fas fa-cogs"></i> Operations 
+                </a>
+                <a href="./get_report.php" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
+                    <i class="fas fa-chart-bar"></i> Reports
                 </a>
             </li>' : "");
             ?>

@@ -397,8 +397,6 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                             <?php endwhile; ?>
                         </div>
 
-
-
                     <?php
                     endif; // End of if statement
                 } else if (isset($_GET['operation-report'])) {

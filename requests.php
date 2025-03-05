@@ -127,7 +127,7 @@ if (isset($_GET['id'])) {
     // Output the PDF as a download
     header('Content-Type: application/pdf');
     header('Content-Disposition: inline; filename="Fuel Report.pdf"');
-    $fuelDocument->Output('D', 'Fuel Request Report.pdf');
+    $fuelDocument->Output();
     exit;
 }
 
@@ -344,9 +344,10 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
             }
 
             echo '</tr></thead><tbody class="bg-white">';
-
+            $i = 1;
             while ($row = $result->fetch_assoc()) {
-                echo '<tr class="border border-b border-black bg-zinc-200 hover:bg-zinc-300">';
+                $strip = ($i % 2 == 0) ? 'bg-gray-100' : ' bg-gray-200';
+                echo '<tr class="border border-b border-black ' . $strip . ' hover:bg-zinc-300">';
                 echo '<td class="text-[15px] border p-2 text-black">' . htmlspecialchars($row['head_mission']) . '</td>';
                 echo '<td class="text-[15px] border p-2 text-black">' . htmlspecialchars($row['driver_name']) . '</td>';
                 echo '<td class="text-[15px] border p-2 text-black">' . htmlspecialchars($row['location_to']) . '</td>';
@@ -398,6 +399,7 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
                 }
 
                 echo '</tr>';
+                $i++;
             }
 
             echo '</tbody></table> </div>';
