@@ -13,10 +13,12 @@
     <div id="conatiner" class="text-lime-700 bg-white font-bold">
         <form action="./pannel/login.php" method="POST" class="bg-white flex flex-col gap-5 p-10 rounded-lg text-center" onsubmit="showLoader()">
             <p>Welcome Login Page</p>
-            <div class="loginform flex flex-col gap-10">
+            <div class="loginform flex flex-col gap-5">
                 <input type="number" name="phone" placeholder="Phone Number" class="w-full border-2 border-blue-500 rounded-md p-[3px] focus:ring focus:outline-none">
                 <input type="password" name="password" placeholder="Password" class="w-full border-2 border-blue-500 rounded-md p-[3px] focus:ring focus:outline-none">
                 <input type="submit" name="login" value="Login" class='w-full border-0 bg-green-800 text-white font-bold rounded-md p-2 hover:cursor-pointer hover:bg-green-700'>
+
+                <p>If have no account <a href="./pannel/signup.php" class="hover text-blue-500 hover:font-bold"> Signup </a> </p>
             </div>
         </form>
 

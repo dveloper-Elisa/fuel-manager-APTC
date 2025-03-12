@@ -21,6 +21,7 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
     $success = "";
     if (isset($_POST['update'])) {
         $driver = $_POST['op_driver'];
+        $plate = $_POST['op_car'];
         $from = $_POST['op_origin'];
         $to = $_POST['op_destin'];
         $date = $_POST['op_date'];
@@ -37,9 +38,9 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
              */
             try {
 
-                $sql = "UPDATE `operation_report` SET `driver` = ?, `op_from` = ? , `op_to` =? , `date`= ?, `description` = ? WHERE op_id = ?";
+                $sql = "UPDATE `operation_report` SET `driver` = ?, `op_car` = ?, `op_from` = ? , `op_to` =? , `date`= ?, `description` = ? WHERE op_id = ?";
                 $stmt = $db->prepare($sql);
-                $stmt->bind_param("sssssi", $driver, $from, $to, $date, $description, $id);
+                $stmt->bind_param("ssssssi", $driver, $plate, $from, $to, $date, $description, $id);
                 if ($stmt->execute()) {
                     $success = "Reported Updated";
                 } else {
@@ -152,6 +153,7 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                 echo '<thead class="bg-lime-700 text-white">';
                 echo '<tr>';
                 echo '<th class="p-2 border text-[14px] text-bold">Driver</th>';
+                echo '<th class="p-2 border text-[14px] text-bold">Car</th>';
                 echo '<th class="p-2 border text-[14px] text-bold">From</th>';
                 echo '<th class="p-2 border text-[14px] text-bold">To</th>';
                 echo '<th class="p-2 border text-[14px] text-bold">Date</th>';
@@ -170,6 +172,7 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                     $strip = ($i % 2 == 0) ? 'bg-gray-100' : ' bg-gray-200';
                     echo '<tr class="border border-b ' .  $strip . ' p-5 hover:bg-zinc-300">';
                     echo '<td class="text-[15px] border p-2 text-black">' . htmlspecialchars($row['driver']) . '</td>';
+                    echo '<td class="text-[15px] border p-2 text-black">' . htmlspecialchars($row['op_car']) . '</td>';
                     echo '<td class="text-[15px] border p-2 text-black">' . htmlspecialchars($row['op_from']) . '</td>';
                     echo '<td class="text-[15px] border p-2 text-black">' . htmlspecialchars($row['op_to']) . '</td>';
                     echo '<td class="text-[15px] border p-2 text-black">' . htmlspecialchars($row['date']) . '</td>';
@@ -248,6 +251,7 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                             <form action="" method="post" class="flex flex-col gap-3 sm:gap-4">
                                 <input type="hidden" name="op_id" value="<?php echo $row['op_id'] ?>">
                                 <input type="text" name="op_driver" value="<?php echo $row['driver'] ?>" class="capitalize input-field text-sm sm:text-base p-2 border border-lime-300 rounded-md focus:outline-none">
+                                <input type="text" name="op_car" value="<?php echo $row['op_car'] ?>" class="capitalize input-field text-sm sm:text-base p-2 border border-lime-300 rounded-md focus:outline-none">
                                 <input type="text" name="op_origin" value="<?php echo $row['op_from'] ?>" class="input-field text-sm sm:text-base p-2 border border-lime-300 rounded-md focus:outline-none">
                                 <input type="text" name="op_destin" value="<?php echo $row['op_to'] ?>" class="input-field text-sm sm:text-base p-2 border border-lime-300 rounded-md focus:outline-none">
                                 <input type="date" name="op_date" value="<?php echo $row['date'] ?>" class="input-field text-sm sm:text-base p-2 border border-lime-300 rounded-md focus:outline-none">

@@ -1,7 +1,7 @@
 <?php
 
 $server = "localhost";
-$base = "aptc_fab";
+$base = "aptc_fuel";
 $user = "root";
 $pass = "";
 $port = 3306;

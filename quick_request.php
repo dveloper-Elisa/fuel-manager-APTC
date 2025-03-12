@@ -124,39 +124,54 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
 
     if (isset($_GET['operation'])) {
         if (isset($_POST['operation'])) {
-            $fuel = $_POST['fuelType'];
-            $litter = $_POST['litter'];
-            $car = $_POST['car'];
+            $petrol_litres = $_POST['petrol_litres'];
+            $diesel_litres = $_POST['diesel_litres'];
+            // $car = $_POST['car'];
             $description = $_POST['description'];
+            $required_date = $_POST['required_date'];
             $prepared_by = $_SESSION['name'];
             $date = date('Y-m-d H:i:s');
+            $status = 'pending';
 
-            if (empty($fuel) || empty($litter) || empty($description) || empty($car)) {
-                $errors[] = "Please fill all fields.";
+            // Check if at least one fuel type is requested
+            if (empty($required_date) || (empty($petrol_litres) && empty($diesel_litres))) {
+                $errors[] = "Please fill all required fields.";
             } else {
                 try {
-                    $status = 'pending';
-                    $sql = "INSERT INTO operation (`fuel`, `litter`, `car`, `description`, `prepared_by`, `created_at`, `status`) 
+                    $db->begin_transaction();
+
+                    $sql = "INSERT INTO operation (fuel, litter, required_date, description, prepared_by, created_at, status) 
                             VALUES (?, ?, ?, ?, ?, ?, ?)";
                     $statement = $db->prepare($sql);
 
                     if ($statement) {
-                        $statement->bind_param('sssssss', $fuel, $litter, $car, $description, $prepared_by, $date, $status);
-                        if ($statement->execute()) {
-                            $success = "Operation sent successfully!";
-                            sleep(3);
-                            header("Location: quick_request.php");
-                            exit();
+                        if (!empty($petrol_litres) && $petrol_litres > 0) {
+                            $fuelType = 'Petrol';
+                            $litres = $petrol_litres;
+                            $statement->bind_param('sssssss', $fuelType, $litres, $required_date, $description, $prepared_by, $date, $status);
+                            $statement->execute();
                         }
+                        if (!empty($diesel_litres) && $diesel_litres > 0) {
+                            $fuelType = 'Diesel';
+                            $litres = $diesel_litres;
+                            $statement->bind_param('sssssss', $fuelType, $litres, $required_date, $description, $prepared_by, $date, $status);
+                            $statement->execute();
+                        }
+                        $db->commit();
+                        $success = "Operation request sent successfully!";
+                        header("Location: quick_request.php");
+                        exit();
                     } else {
                         $errors[] = "Failed to prepare the SQL statement.";
                     }
                 } catch (PDOException $e) {
+                    $db->rollback();
                     $errors[] = $e->getMessage();
                 }
             }
         }
     }
+
 
     /**
      * STORING OPERATION REPORT FOR HOW FUEL WERE USED
@@ -164,12 +179,13 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
 
     if (isset($_GET['operation-report']) && isset($_POST['op_report'])) {
         $driver = $_POST['op_driver'];
+        $plate = $_POST['op_car'];
         $from = $_POST['op_origin'];
         $to = $_POST['op_destin'];
         $date = $_POST['op_date'];
         $description = $_POST['op_description'];
 
-        if (empty($driver) || $driver == "" || empty($from) || $from == "" || empty($to) || $to == "" || empty($date) || $date == "" || empty($description) || $description == "") {
+        if (empty($driver) || $driver == "" || empty($from) || $from == "" || empty($to) || $to == "" || empty($date) || $date == "" || empty($description) || $description == "" || empty($plate) || $plate == "") {
             $errors[] = "Fill All fields please";
         } else {
             /**
@@ -177,9 +193,9 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
              */
             try {
 
-                $sql = "INSERT INTO `operation_report` (`driver`, `op_from`, `op_to`, `date`, `description`) VALUES (?, ?, ?, ?, ?)";
+                $sql = "INSERT INTO `operation_report` (`driver`, `op_car`, `op_from`, `op_to`, `date`, `description`) VALUES (?, ?, ?, ?, ?, ?)";
                 $stmt = $db->prepare($sql);
-                $stmt->bind_param("sssss", $driver, $from, $to, $date, $description);
+                $stmt->bind_param("ssssss", $driver, $plate, $from, $to, $date, $description);
                 if ($stmt->execute()) {
                     $success = "Reported success fully";
                 } else {
@@ -215,7 +231,7 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                     <h1 class="text-xl font-semibold text-lime-700 flex flex-row items-center gap-2"><i class="fa-solid fa-home"></i> <span class="lg:flex md:flex sm:flex hidden"> <?php echo $role == "LOGISTICS" ? "Quick Actions" : "Operation"; ?></span></h1>
                     <div class="flex items-center space-x-4">
                         <span class="text-gray-600"> <?php echo "<b>" . $_SESSION["name"] . "</b>"; ?></span>
-                        <?php echo (strtoupper($_SESSION['role']) == 'LOGISTICS') ?
+                        <?php echo (strtoupper($_SESSION['role']) == 'LOGISTICS' && !isset($_GET['operation-status'])) ?
                             '<button id="showFormBtn" class="bg-lime-700 text-white py-2 px-4 rounded-lg hover:bg-lime-800 transition" alt="Send Quick"> Quick Act </button>' : ''; ?>
                     </div>
                 </div>
@@ -277,7 +293,7 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                     $total_items = $total_row['total'];
 
                     // Fetch the results for the current page
-                    $quick = "SELECT * FROM operation LIMIT $items_per_page OFFSET $offset";
+                    $quick = "SELECT * FROM operation ORDER BY created_at DESC LIMIT $items_per_page OFFSET $offset";
                     $statement = $db->prepare($quick);
 
                     $success = "";
@@ -375,7 +391,7 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                                         <h3 class="text-md text-center flex items-center justify-center font-bold <?php echo $operation['status'] == "rejected" ? "text-red-600 border-red-500" : "text-lime-700 border-blue-500" ?> capitalize border-b border-b-2  rounded-md p-2 w-fit">
                                             <?php echo htmlspecialchars($operation['status']); ?>
                                         </h3>
-                                        <p class="text-gray-700"><strong>Plate No:</strong> <?php echo htmlspecialchars($operation['car']); ?></p>
+                                        <p class="text-gray-700"><strong>Required_On:</strong> <?php echo htmlspecialchars($operation['required_date']); ?></p>
                                         <p class="text-gray-700"><strong>Fuel:</strong> <?php echo htmlspecialchars($operation['fuel']); ?> </p>
                                         <p class="text-gray-700"><strong>Amount:</strong> <?php echo htmlspecialchars($operation['litter']); ?> Liters</p>
                                         <p class="text-gray-700"><strong>Requested By:</strong> <?php echo htmlspecialchars($operation['prepared_by']); ?></p>
@@ -437,8 +453,9 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                 <?php
                 } else if (isset($_GET['operation-report'])) {
                 ?>
-                    <!-- FORM CONTENT AHEAD -->
-                    <!-- Main Content -->
+                    <!-- 
+                     OPERATION REPORT
+                      -->
                     <div id="popupForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center  p-4">
                         <div class="bg-white shadow-lg rounded-lg p-4 sm:p-6 md:p-8 w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl relative max-h-[90vh] overflow-y-auto">
                             <button id="closeFormBtn" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-xl">&times;</button>
@@ -462,10 +479,11 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
 
                             <form action="" method="post" class="flex flex-col gap-3 sm:gap-4">
                                 <input type="text" name="op_driver" placeholder="Driver Name" class="capitalize input-field text-sm sm:text-base">
+                                <input type="text" name="op_car" placeholder="Plate Number" class="capitalize input-field text-sm sm:text-base">
                                 <input type="text" name="op_origin" placeholder="From" class="input-field text-sm sm:text-base">
                                 <input type="text" name="op_destin" placeholder="Destination" class="input-field text-sm sm:text-base">
                                 <input type="date" name="op_date" id="" class="input-field text-sm sm:text-base">
-                                <textarea name="op_description" placeholder="Write Description" class="input-field h-20 sm:h-24 text-sm sm:text-base"></textarea>
+                                <textarea name="op_description" placeholder="Write Description" class="firstletter-uppercase input-field h-20 sm:h-24 text-sm sm:text-base"></textarea>
                                 <button type="submit" name="op_report" class="bg-lime-700 text-white py-2 rounded-lg hover:bg-lime-800 transition text-sm sm:text-base">
                                     Make report
                                 </button>
@@ -503,10 +521,12 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                 } else {
                 ?>
 
+                    <!-- 
+DISPLAYING QUICK REQUEST REPORTS                            
+-->
                     <div class="grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 grid-cols-1 gap-4 p-4">
                         <?php while ($row = $result->fetch_assoc()) : ?>
                             <div class="bg-white shadow-lg rounded-lg p-4 border border-gray-200 flex flex-row items-center justify-between">
-
                                 <div class="w-fit">
                                     <h3 class="text-md font-bold text-lime-700 capitalize"><?php echo htmlspecialchars($row['head_mission']); ?></h3>
                                     <p class="text-gray-700"><strong>Driver:</strong> <?php echo htmlspecialchars($row['driver']); ?></p>
@@ -550,8 +570,9 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                         <?php endif; ?>
                     </div>
 
-                    <!-- FORM CONTENT AHEAD -->
-                    <!-- Main Content -->
+                    <!-- 
+                    FORM CONTENT FOR QUICK REQUEST FUEL
+                      -->
                     <div id="popupForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden p-4">
                         <div class="bg-white shadow-lg rounded-lg p-4 sm:p-6 md:p-8 w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl relative max-h-[90vh] overflow-y-auto">
                             <button id="closeFormBtn" class="absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-xl">&times;</button>
@@ -593,7 +614,9 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                         </div>
                     </div>
 
-                    <!-- POPUP FOR MANAGING FUEL PRICE -->
+                    <!-- 
+                    POPUP FOR MANAGING FUEL PRICES 
+                    -->
 
                     <div id="popupPrice" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center 
                 <?php echo isset($_GET['price']) ? '' : 'hidden'; ?> p-4">
@@ -632,68 +655,71 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                         </div>
                     </div>
 
-                    <!-- MANAGE OPERATION POPUP -->
+                    <!--
+                     MANAGE OPERATION POPUP FOR REQUESTING OPERATION FUEL
+                    -->
                     <div id="popupOperation" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center 
-                <?php echo isset($_GET['operation']) ? '' : 'hidden'; ?> p-4">
+    <?php echo isset($_GET['operation']) ? '' : 'hidden'; ?> p-4">
                         <div class="bg-white shadow-lg rounded-lg p-4 sm:p-6 md:p-8 w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl relative max-h-[90vh] overflow-y-auto">
                             <button id="closeFormBtn" class="hover:text-red-500 hover:font-bold absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-xl z-9">&times;</button>
                             <h2 class="text-lg sm:text-xl md:text-2xl font-semibold text-lime-700 text-center mb-4 sm:mb-6">
-                                Request for Operation fuel
+                                Request for Operation Fuel
                             </h2>
 
                             <?php if (!empty($errors)): ?>
                                 <div class="bg-red-100 text-red-700 p-2 sm:p-3 rounded mb-4 text-sm sm:text-base">
                                     <?php foreach ($errors as $error) {
                                         echo "<p>$error</p>";
-                                    }
-                                    sleep(3);
-                                    ?>
+                                    } ?>
                                 </div>
                             <?php endif; ?>
 
                             <?php if (!empty($success)): ?>
                                 <div class="bg-green-100 text-green-700 p-2 sm:p-3 rounded mb-4 text-sm sm:text-base">
-                                    <?php echo $success;
-                                    sleep(3);
-                                    ?>
+                                    <?php echo $success; ?>
                                 </div>
                             <?php endif; ?>
 
                             <form action="" method="post" class="flex flex-col gap-3 sm:gap-4">
-                                <select name="fuelType" id="fuelType" class="input-field text-sm sm:text-base">
-                                    <option value="">-- Select Fuel --</option>
-                                    <option value="Diesel">Diesel</option>
-                                    <option value="Petrol">Petrol</option>
-                                </select>
-                                <input type="number" min=1 name="litter" placeholder="Number of Littres" class="input-field text-sm sm:text-base">
-                                <select name="car" id="fuelType" class="input-field text-sm sm:text-base">
+                                <div class="flex flex-col sm:flex-row gap-3">
+                                    <input type="number" min="0" name="petrol_litres" placeholder="Petrol (Litres)" class="input-field text-sm sm:text-base">
+                                    <input type="number" min="0" name="diesel_litres" placeholder="Diesel (Litres)" class="input-field text-sm sm:text-base">
+                                </div>
+
+                                <!-- <select name="car" class="input-field text-sm sm:text-base">
                                     <option value="">-- Select Car --</option>
                                     <option value="RDF697S">RDF697S</option>
                                     <option value="RDF198P">RDF198P</option>
-                                </select>
-                                <textarea name="description" class="input-field h-20 sm:h-24 text-sm sm:text-base"></textarea>
+                                </select> -->
+
+                                <input type="date" name="required_date" class="input-field text-sm sm:text-base" required>
+
+                                <textarea name="description" class="input-field h-20 sm:h-24 text-sm sm:text-base" placeholder="Additional Details"></textarea>
+
                                 <button type="submit" name="operation" class="bg-lime-700 text-white py-2 rounded-lg hover:bg-lime-800 transition text-sm sm:text-base">
                                     Send Request
                                 </button>
                             </form>
                         </div>
-                        <script>
-                            document.getElementById("closeFormBtn").addEventListener("click", function() {
-                                document.getElementById("popupOperation").classList.add("hidden");
+                    </div>
+
+                    <script>
+                        document.addEventListener("DOMContentLoaded", function() {
+                            const popup = document.getElementById("popupOperation");
+                            const closeBtn = document.getElementById("closeFormBtn");
+
+                            closeBtn.addEventListener("click", function() {
+                                popup.classList.add("hidden");
                             });
 
-                            document.getElementById("closeFormBtn").addEventListener("click", function() {
-                                document.getElementById("closeFormBtn").classList.add("hidden");
-                            });
-
-                            // Close popup when clicking outside the form
-                            document.getElementById("popupOperation").addEventListener("click", function(event) {
-                                if (event.target === this) {
-                                    this.classList.add("hidden");
+                            popup.addEventListener("click", function(event) {
+                                if (event.target === popup) {
+                                    popup.classList.add("hidden");
                                 }
                             });
-                        </script>
-                    </div>
+                        });
+                    </script>
+
 
                 <?php } ?>
             </div>

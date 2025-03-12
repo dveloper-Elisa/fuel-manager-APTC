@@ -306,6 +306,12 @@ $dotenv->load();
 </body>
 
 <script>
+    // DISPLAYING DATE FROM CURRENT
+    let today = new Date().toISOString().split("T")[0]
+    document.getElementById("departure").min = today
+    document.getElementById("return").min = today
+
+    // UPDATING VEHICLE NAME BY REFFERING TO SLECTED PLATE NUMBER
     function updateVehicleType() {
         let selectedPlate = document.getElementById("plateSelect").value;
         let vehicleTypes = <?php echo json_encode($vehicles); ?>;

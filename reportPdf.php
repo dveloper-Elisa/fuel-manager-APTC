@@ -57,7 +57,7 @@ if (isset($_GET['down-operation'])) {
     addDataRow($quickPdf, 'Fuel:', $data['fuel']);
     addDataRow($quickPdf, 'Litter:', $data['litter']);
     addDataRow($quickPdf, 'Plate Number:', $data['car']);
-    addDataRow($quickPdf, 'Description:', $data['description'], false);
+    addDataRow($quickPdf, 'Description:', $data['description'], true);
 
     $quickPdf->Ln(20);
     $quickPdf->Cell(95, 10, 'Requested by: ', 0, 0, 'L');
@@ -72,6 +72,10 @@ if (isset($_GET['down-operation'])) {
     $quickPdf->Output();
 }
 
+/**
+ * GENERATING PDF FOR OPERATION REPORT
+ * 
+ */
 // Fetch data
 $result = $db->query("SELECT * FROM operation_report ORDER BY date DESC");
 if (!$result) {
@@ -106,6 +110,7 @@ $pdf->SetFont('Times', 'B', 13);
 $pdf->SetFillColor(76, 175, 80);
 $pdf->SetTextColor(255);
 $pdf->Cell(40, 10, 'Driver', 1, 0, 'C', true);
+$pdf->Cell(40, 10, 'Plate No', 1, 0, 'C', true);
 $pdf->Cell(40, 10, 'From', 1, 0, 'C', true);
 $pdf->Cell(40, 10, 'To', 1, 0, 'C', true);
 $pdf->Cell(40, 10, 'Date', 1, 0, 'C', true);
@@ -117,10 +122,11 @@ $pdf->SetTextColor(0);
 // Table rows
 while ($row = $result->fetch_assoc()) {
     $pdf->Cell(40, 10, htmlspecialchars($row['driver']), 1);
+    $pdf->Cell(40, 10, htmlspecialchars($row['op_car']), 1);
     $pdf->Cell(40, 10, htmlspecialchars($row['op_from']), 1);
     $pdf->Cell(40, 10, htmlspecialchars($row['op_to']), 1);
     $pdf->Cell(40, 10, htmlspecialchars($row['date']), 1);
-    $pdf->Cell(80, 10, htmlspecialchars($row['description']), 1, 1);
+    $pdf->MultiCell(80, 10, htmlspecialchars($row['description']), 1);
 }
 
 // Output PDF
