@@ -56,7 +56,7 @@ if (isset($_GET['down-operation'])) {
 
     addDataRow($quickPdf, 'Fuel:', $data['fuel']);
     addDataRow($quickPdf, 'Litter:', $data['litter']);
-    addDataRow($quickPdf, 'Plate Number:', $data['car']);
+    addDataRow($quickPdf, 'Required Date:', $data['required_date']);
     addDataRow($quickPdf, 'Description:', $data['description'], true);
 
     $quickPdf->Ln(20);

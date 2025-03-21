@@ -663,7 +663,7 @@ DISPLAYING QUICK REQUEST REPORTS
                         <div class="bg-white shadow-lg rounded-lg p-4 sm:p-6 md:p-8 w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl relative max-h-[90vh] overflow-y-auto">
                             <button id="closeFormBtn" class="hover:text-red-500 hover:font-bold absolute top-2 right-2 text-gray-600 hover:text-gray-900 text-xl z-9">&times;</button>
                             <h2 class="text-lg sm:text-xl md:text-2xl font-semibold text-lime-700 text-center mb-4 sm:mb-6">
-                                Request for Operation Fuel
+                                Administration Fuel
                             </h2>
 
                             <?php if (!empty($errors)): ?>

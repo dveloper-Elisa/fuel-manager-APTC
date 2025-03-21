@@ -1,11 +1,17 @@
 <?php
-error_reporting(E_ALL);
-ini_set("display_errors", 1);
+error_reporting(0);
+ini_set("display_errors", 0);
+
+define('ALLOW_INCLUDE', true);
 
 session_start();
 
 if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'CEO' || strtoupper($_SESSION["role"]) == 'D/CEO')) {
 
+    /**
+     * FUNCTION FOR DISPLAYING RANGE REPORT
+     * FROM DIFFRENT DATES
+     */
 
 
     $role = strtoupper($_SESSION['role']);
@@ -108,7 +114,9 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
     <body>
         <div class="flex h-screen">
             <!-- Sidebar -->
-            <?php include("./components/side.php"); ?>
+            <?php
+            include("./components/side.php");
+            ?>
             <div class="flex-1 p-6">
                 <!-- Top Bar -->
                 <div class="flex justify-between items-center bg-white p-4 rounded shadow-md">
@@ -119,32 +127,98 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
 
                 </div>
 
-
                 <!-- 
                 DISPLAYING OPEARTION REPORT
                 -->
                 <h2 class="text-capitalize font-bold text-[15px] md:text-[20px] lg:text-[30px] sm:text-[15px] py-5 bg-slate-200 flex items-center justify-center gap-10" style="font-family:Bodoni MT Black;"><span>OPERATION FUEL REPORT </span>
                     <a target="_blank" href="reportPdf.php"> <span class="material-icons text-[20px text-red-500" title="Download Pdf">picture_as_pdf</span></a>
                 </h2>
+                <form method="POST" class="flex flex-col sm:flex-row justify-center items-center gap-4 bg-white shadow-md rounded-lg">
+                    <!-- From Date -->
+                    <div class="flex flex-row justify-center items-center gap-5">
+                        <label for="from" class="text-gray-700 font-semibold text-sm">From</label>
+                        <input type="date" name="from" id="from" require class="border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-lime-700 text-5">
+                    </div>
+
+                    <!-- To Date -->
+                    <div class="flex flex-row justify-center items-center gap-5">
+                        <label for="to" class="text-gray-700 font-semibold text-sm">To</label>
+                        <input type="date" name="to" id="to" require class="border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-lime-700 text-5">
+                    </div>
+
+                    <!-- Search Button -->
+                    <div class="flex flex-row gap-5 items-center">
+                        <button type="submit" name="search" class="bg-blue-700 w-5 h-5 p-1 text-center text-white rounded-sm flex items-center hover:bg-blue-800 transition">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <!-- <button type="submit" name="weekreport"> <span class="material-icons text-[20px text-blue-500" title="Download Pdf">picture_as_pdf</span></button> -->
+                    </div>
+                </form>
+
                 <?php
                 // Number of items per page
                 $items_per_page = 6;
-
                 // Get the current page from the URL, defaulting to 1 if not set
                 $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-
+                // Ensure the current page is at least 1
+                $current_page = max(1, $current_page);
                 // Calculate the offset (number of items to skip)
                 $offset = ($current_page - 1) * $items_per_page;
-
                 // Fetch the total number of rows in the operation_report table
                 $total_result = mysqli_query($db, "SELECT COUNT(*) as total FROM operation_report");
                 $total_row = mysqli_fetch_assoc($total_result);
                 $total_items = $total_row['total'];
 
-                // Fetch the results for the current page
-                $result = mysqli_query($db, "SELECT * FROM operation_report ORDER BY date DESC LIMIT $items_per_page OFFSET $offset");
+                $result = "";
+
+                // Check if search is submitted
+                if (isset($_POST['search'])) {
+                    $start = mysqli_real_escape_string($db, $_POST["from"]);
+                    $end = mysqli_real_escape_string($db, $_POST["to"]);
+
+                    // Validate date format (YYYY-MM-DD)
+                    if (!empty($start) && !empty($end) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $start) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $end)) {
+                        $query = "SELECT * FROM operation_report 
+                  WHERE date BETWEEN '$start' AND '$end' 
+                  ORDER BY date DESC 
+                  LIMIT $items_per_page OFFSET $offset";
+                    } else {
+                        $query = "SELECT * FROM operation_report ORDER BY date DESC LIMIT $items_per_page OFFSET $offset";
+                    }
+                } else {
+                    $query = "SELECT * FROM operation_report ORDER BY date DESC LIMIT $items_per_page OFFSET $offset";
+                }
+
+                /**
+                 * DOWLOADING PDF
+                 * FROM THE PDF ICON
+                 * FROM SEARCH
+                 */
+                if (isset($_POST['weekreport'])) {
+                    $from = mysqli_real_escape_string($db, $_POST["from"]);
+                    $to = mysqli_real_escape_string($db, $_POST["to"]);
+
+                    if (!empty($from) && !empty($to)) {
+                        $_SESSION['from'] = $from;
+                        $_SESSION['to'] = $to;
+                        header("Location: report/rangeReport.php");
+                        exit(); // Prevents further execution
+                    } else {
+                ?>
+                        <script>
+                            alert("Please fill all dates filled")
+                        </script>
+                <?php
+                    }
+                }
+
+
+                // Execute the query
+                $result = mysqli_query($db, $query);
+
+                // Check for query execution errors
                 if (!$result) {
-                    return;
+                    die("Query Failed: " . mysqli_error($db));
                 }
 
                 // Render the HTML table with overflow-x-scroll
