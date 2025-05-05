@@ -206,7 +206,7 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                     } else {
                 ?>
                         <script>
-                            alert("Please fill all dates filled")
+                            alert("Please fill all dates field")
                         </script>
                 <?php
                     }
@@ -226,7 +226,7 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                 echo '<table class="min-w-max w-full border-collapse border border-gray-400 text-left text-gray-700">';
                 echo '<thead class="bg-lime-700 text-white">';
                 echo '<tr>';
-                echo '<th class="p-2 border text-[14px] text-bold">Driver</th>';
+                echo '<th class="p-2 border text-[14px] text-bold">Mission Header</th>';
                 echo '<th class="p-2 border text-[14px] text-bold">Car</th>';
                 echo '<th class="p-2 border text-[14px] text-bold">From</th>';
                 echo '<th class="p-2 border text-[14px] text-bold">To</th>';

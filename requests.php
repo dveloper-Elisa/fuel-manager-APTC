@@ -326,21 +326,27 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
 
 
             // Render the HTML table with overflow-x-scroll
-            echo '<div class="w-[100%] overflow-x-auto mt-4 border border-gray-300">';
+            echo '<div id="printableTable" class="w-[100%] overflow-x-auto mt-4 border border-gray-300">';
+            ?>
+            <button onclick="printPdf()">Print Report</button>
+            <?php
             echo '<table class="min-w-max w-full border-collapse border border-gray-400 text-left text-gray-700">';
             echo '<thead class="bg-lime-700 text-white">';
             echo '<tr>';
             echo '<th class="p-2 border text-[12px]">Mission Header</th>';
             echo '<th class="p-2 border text-[12px]">Mission Driver</th>';
+            echo '<th class="p-2 border text-[12px]">From</th>';
             echo '<th class="p-2 border text-[12px]">Destination</th>';
             echo '<th class="p-2 border text-[12px]">Date to go</th>';
             echo '<th class="p-2 border text-[12px]">Fuel Requested</th>';
 
             if (strtoupper($_SESSION['role']) === 'D/CEO' || strtoupper($_SESSION['role']) === 'CEO') {
-                echo '<th class="p-2 border text-[12px]">Actions</th>';
+                echo '<th class="p-2 border text-[12px] no-print">Actions</th>';
             }
             if (strtolower($_SESSION['role']) === 'logistics') {
-                echo (isset($_GET['status']) && $_GET['status'] === 'rejected') ? '<th class="p-2 border text-[12px]">Status</th>' : '<th class="p-2 border text-[12px]">Verify</th>';
+                echo (isset($_GET['status']) && $_GET['status'] === 'rejected')
+                    ? '<th class="p-2 border text-[12px] no-print">Status</th>'
+                    : '<th class="p-2 border text-[12px] no-print">Verify</th>';
             }
 
             echo '</tr></thead><tbody class="bg-white">';
@@ -350,6 +356,7 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
                 echo '<tr class="border border-b border-black ' . $strip . ' hover:bg-zinc-300">';
                 echo '<td class="text-[15px] border p-2 text-black">' . htmlspecialchars($row['head_mission']) . '</td>';
                 echo '<td class="text-[15px] border p-2 text-black">' . htmlspecialchars($row['driver_name']) . '</td>';
+                echo '<td class="text-[15px] border p-2 text-black">' . htmlspecialchars($row['location_from']) . '</td>';
                 echo '<td class="text-[15px] border p-2 text-black">' . htmlspecialchars($row['location_to']) . '</td>';
                 echo '<td class="text-[15px] border p-2 text-black">' . htmlspecialchars($row['date_from']) . '</td>';
                 echo '<td class="text-[15px] border p-2 text-black">' . htmlspecialchars($row['fuel_type']) . '</td>';
@@ -434,6 +441,54 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
     </div>
 
     <script>
+        // Creating print pdf
+        function printPdf() {
+            var originalTable = document.querySelector("#printableTable table"); // Find the table inside the div
+
+            // Clone the table so we don't change the original
+            var clonedTable = originalTable.cloneNode(true);
+
+            // Find the "Verify" or "Actions" column index
+            var headerCells = clonedTable.querySelectorAll("thead th");
+            let columnIndexToRemove = -1;
+
+            headerCells.forEach(function(th, index) {
+                if (th.innerText.trim().toLowerCase() === "verify" || th.innerText.trim().toLowerCase() === "actions") {
+                    columnIndexToRemove = index;
+                }
+            });
+
+            if (columnIndexToRemove !== -1) {
+                // Remove header cell
+                headerCells[columnIndexToRemove].remove();
+
+                // Remove each corresponding cell in tbody
+                var rows = clonedTable.querySelectorAll("tbody tr");
+                rows.forEach(function(row) {
+                    var cells = row.querySelectorAll("td");
+                    if (cells[columnIndexToRemove]) {
+                        cells[columnIndexToRemove].remove();
+                    }
+                });
+            }
+
+            // Now open a new page and print the cleaned table
+            var printWindow = window.open('', '_blank');
+            printWindow.document.write('<html><head><title>Fuel Request Report</title>');
+            printWindow.document.write('<style>');
+            printWindow.document.write('body { padding: 20px; font-family: Arial, sans-serif; }');
+            printWindow.document.write('table { width: 100%; border-collapse: collapse; margin-top: 20px; }');
+            printWindow.document.write('th, td { border: 1px solid black; padding: 8px; text-align: left; font-size: 14px; }');
+            printWindow.document.write('thead { background-color: #4d7c0f; color: white; }');
+            printWindow.document.write('tr:nth-child(even) { background-color: #f2f2f2; }');
+            printWindow.document.write('</style>');
+            printWindow.document.write('</head><body>');
+            printWindow.document.write('<h2>Fuel Request Report</h2>');
+            printWindow.document.write(clonedTable.outerHTML);
+            printWindow.document.write('</body></html>');
+
+            printWindow.document.close();
+        }
         // FETCHING VIEW REQUEST OF POPUP
         function viewRequest(id) {
             fetch(`requests.php?req_id=${id}`)

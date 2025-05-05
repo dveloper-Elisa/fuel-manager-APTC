@@ -20,7 +20,7 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
     $errors = [];
     if (isset($_POST['quick_request'])) {
         $header = trim($_POST['header']);
-        $driver = trim($_POST['driver']);
+        $mission_header = trim($_POST['driver']);
         $plate = strtoupper(trim($_POST['plate']));
         $fueltype = trim($_POST['fueltype']);
         $fuel_littel = trim($_POST['fuel_littel']);
@@ -30,7 +30,7 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
         $prepared_by = $_SESSION['name'];
 
         // Input validation
-        if (empty($header) || empty($driver) || empty($plate) || empty($fuel_littel) || empty($origin) || empty($destination) || empty($description)) {
+        if (empty($header) || empty($mission_header) || empty($plate) || empty($fuel_littel) || empty($origin) || empty($destination) || empty($description)) {
             $errors[] = "All fields are required.";
         } elseif (!is_numeric($fuel_littel) || $fuel_littel <= 0) {
             $errors[] = "Fuel quantity must be a positive number.";
@@ -56,7 +56,7 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
 
             $sql = "INSERT INTO `quick_action`(`head_mission`, `driver`, `plate_no`, `fuel`, `price`, `origin`, `destination`, `description`, `prepared_by`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $statement = $db->prepare($sql);
-            $statement->bind_param("sssidssss", $header, $driver, $plate, $fuel_littel, $realPrice, $origin, $destination, $description, $prepared_by);
+            $statement->bind_param("sssidssss", $header, $mission_header, $plate, $fuel_littel, $realPrice, $origin, $destination, $description, $prepared_by);
 
             if ($statement->execute()) {
                 $success = "Request submitted successfully.";
@@ -178,14 +178,14 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
      */
 
     if (isset($_GET['operation-report']) && isset($_POST['op_report'])) {
-        $driver = $_POST['op_driver'];
+        $mission_header = $_POST['op_header'];
         $plate = $_POST['op_car'];
         $from = $_POST['op_origin'];
         $to = $_POST['op_destin'];
         $date = $_POST['op_date'];
         $description = $_POST['op_description'];
 
-        if (empty($driver) || $driver == "" || empty($from) || $from == "" || empty($to) || $to == "" || empty($date) || $date == "" || empty($description) || $description == "" || empty($plate) || $plate == "") {
+        if (empty($mission_header) || $mission_header == "" || empty($from) || $from == "" || empty($to) || $to == "" || empty($date) || $date == "" || empty($description) || $description == "" || empty($plate) || $plate == "") {
             $errors[] = "Fill All fields please";
         } else {
             /**
@@ -195,7 +195,7 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
 
                 $sql = "INSERT INTO `operation_report` (`driver`, `op_car`, `op_from`, `op_to`, `date`, `description`) VALUES (?, ?, ?, ?, ?, ?)";
                 $stmt = $db->prepare($sql);
-                $stmt->bind_param("ssssss", $driver, $plate, $from, $to, $date, $description);
+                $stmt->bind_param("ssssss", $mission_header, $plate, $from, $to, $date, $description);
                 if ($stmt->execute()) {
                     $success = "Reported success fully";
                 } else {
@@ -206,7 +206,6 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
             }
         }
     }
-
     ?>
 
 
@@ -408,7 +407,7 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                                         <?php
                                         if ($operation['status'] == 'approved') {
                                         ?>
-                                            <span><a target="_blank" href="reportPdf.php?down-operation=<?php echo $operation['id']; ?>"> <span class="material-icons text-[20px text-red-500" title="Download Pdf">picture_as_pdf</span></a></span>
+                                            <span><a target="_blank" href="reportPdf.php?down-operation=<?php echo $operation['id']; ?>"> <span class="material-icons text-[20px] text-blue-600" title="Download Pdf">picture_as_pdf</span></a></span>
                                         <?php
                                         } elseif ($operation['status'] == 'rejected') {
                                             echo "<span>🚫</span>";
@@ -478,7 +477,7 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                             <?php endif; ?>
 
                             <form action="" method="post" class="flex flex-col gap-3 sm:gap-4">
-                                <input type="text" name="op_driver" placeholder="Driver Name" class="capitalize input-field text-sm sm:text-base">
+                                <input type="text" name="op_header" placeholder="Header Name" class="capitalize input-field text-sm sm:text-base">
                                 <input type="text" name="op_car" placeholder="Plate Number" class="capitalize input-field text-sm sm:text-base">
                                 <input type="text" name="op_origin" placeholder="From" class="input-field text-sm sm:text-base">
                                 <input type="text" name="op_destin" placeholder="Destination" class="input-field text-sm sm:text-base">
