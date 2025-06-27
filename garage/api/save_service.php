@@ -12,16 +12,14 @@ if (!$input) {
 }
 
 // Insert into service_records table
-$stmt = $db->prepare("INSERT INTO service_records (license_plate, make, model, notes, total_labor, total_parts, tax_amount, grand_total, service_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+$stmt = $db->prepare("INSERT INTO service_records (license_plate, make, model, notes, total_parts, grand_total, service_date) VALUES (?, ?, ?, ?, ?, ?, ?)");
 $stmt->bind_param(
-    "ssssdddss",
+    "ssssdss",
     $input['license_plate'],
     $input['make'],
     $input['model'],
     $input['notes'],
-    $input['total_labor_cost'],
     $input['total_parts_cost'],
-    $input['tax_amount'],
     $input['grand_total'],
     $input['service_date']
 );
@@ -30,9 +28,9 @@ if ($stmt->execute()) {
     $record_id = $stmt->insert_id;
 
     // Insert services
-    $stmt_service = $db->prepare("INSERT INTO services (record_id, service_type, description, labor_hours, labor_rate) VALUES (?, ?, ?, ?, ?)");
+    $stmt_service = $db->prepare("INSERT INTO services (record_id, service_type, description) VALUES (?, ?, ?)");
     foreach ($input['services'] as $srv) {
-        $stmt_service->bind_param("issdd", $record_id, $srv['service_type'], $srv['service_description'], $srv['labor_hours'], $srv['labor_rate']);
+        $stmt_service->bind_param("iss", $record_id, $srv['service_type'], $srv['service_description']);
         $stmt_service->execute();
     }
 

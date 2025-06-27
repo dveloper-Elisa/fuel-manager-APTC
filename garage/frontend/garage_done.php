@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @media print {
-            .no-print {
+            .no-print, button, aside {
                 display: none !important;
             }
             body {
@@ -38,7 +38,7 @@
     <div class="bg-white h-screen rounded-lg flex flex-row">
     <?php
     session_start();
-    include "../../components/side.php"
+    include "./side.php"
     ?>
 
 
@@ -61,7 +61,6 @@
                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Part Name</th>
                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Quantity</th>
                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Unit Price</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Labor Cost</th>
                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Parts Cost</th>
                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Total</th>
                         <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Date</th>
@@ -102,7 +101,6 @@
                             <td class="px-3 py-2 whitespace-nowrap border border-gray-200">${record.part_name}</td>
                             <td class="px-3 py-2 whitespace-nowrap border border-gray-200">${record.quantity}</td>
                             <td class="px-3 py-2 whitespace-nowrap border border-gray-200">${record.unit_price} RWF</td>
-                            <td class="px-3 py-2 whitespace-nowrap border border-gray-200">${record.total_labor_cost} RWF</td>
                             <td class="px-3 py-2 whitespace-nowrap border border-gray-200">${record.total_parts_cost} RWF</td>
                             <td class="px-3 py-2 whitespace-nowrap border border-gray-200 font-medium">${record.grand_total} RWF</td>
                             <td class="px-3 py-2 whitespace-nowrap border border-gray-200">${new Date(record.service_date).toLocaleDateString()}</td>

@@ -276,7 +276,7 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                     <?php
                 endif;
 
-                if (isset($_GET['operation-status']) || isset($_GET['approval']) || isset($_GET['reject']) || isset($_GET['page'])) {
+                if ((isset($_GET['operation-status']) ) || isset($_GET['approval']) || isset($_GET['reject']) ) {
 
                     $items_per_page = 6;
 
@@ -431,17 +431,17 @@ if (isset($_SESSION["role"]) && strtoupper($_SESSION["role"]) == 'LOGISTICS' || 
                         echo '<div class="pagination">';
                         echo '<ul class="flex justify-center gap-4">';
                         if ($current_page > 1) {
-                            echo '<li><a href="?page=' . ($current_page - 1) . '" class="text-blue-500 hover:underline">Previous</a></li>';
+                            echo '<li><a href="?operation-status&page=' . ($current_page - 1) . '" class="text-blue-500 hover:underline">Previous</a></li>';
                         }
                         for ($page = 1; $page <= $total_pages; $page++) {
                             if ($page == $current_page) {
                                 echo '<li class="font-bold">' . $page . '</li>';
                             } else {
-                                echo '<li><a href="?page=' . $page . '" class="text-blue-500 hover:underline">' . $page . '</a></li>';
+                                echo '<li><a href="?operation-status&page=' . $page . '" class="text-blue-500 hover:underline">' . $page . '</a></li>';
                             }
                         }
                         if ($current_page < $total_pages) {
-                            echo '<li><a href="?page=' . ($current_page + 1) . '" class="text-blue-500 hover:underline">Next</a></li>';
+                            echo '<li><a href="?operation-status&page=' . ($current_page + 1) . '" class="text-blue-500 hover:underline">Next</a></li>';
                         }
                         echo '</ul>';
                         echo '</div>';

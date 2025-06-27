@@ -15,48 +15,46 @@
         <h3 class="text-md font-bold mb-6 whitespace-nowrap">Fuel Management</h3>
         <ul>
             <li class="mb-2">
-                <a href="./dashboard.php" class="block p-2 hover:bg-lime-600 rounded whitespace-nowrap">
+                <a href="../../dashboard.php" class="block p-2 hover:bg-lime-600 rounded whitespace-nowrap">
                     <i class="fa-solid fa-home"></i> Dashboard
                 </a>
             </li>
             <li class="mb-2">
-                <a href="./requests.php" class="block p-2 hover:bg-lime-600 rounded">
+                <a href="../../requests.php" class="block p-2 hover:bg-lime-600 rounded">
                     <i class="fa-solid fa-file-alt"></i> Requests
                 </a>
             </li>
             <?php
             echo (strtoupper($_SESSION['role']) === 'LOGISTICS') ? '<li class="mb-2">
-                <a href="./quick_request.php" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
+                <a href="../../quick_request.php" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
                     <i class="fas fa-forward"></i> QuickAct 
                 </a>
-                <a href="./quick_request.php?operation-status" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
+                <a href="../../quick_request.php?operation-status" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
                     <i class="fas fa-cogs"></i> Operations 
                 </a>
-                <a href="./get_report.php" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
+                <a href="../../get_report.php" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
                     <i class="fas fa-chart-bar"></i> Reports
                 </a>
-                <a href="./garage/frontend/garage_done.php" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
+                <a href="./garage_done.php" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
                     <i class="fas fa-chart-bar"></i> Garage Reports
                 </a>
+                <a href="./garage_service.php" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
+                    <i class="fas fa-chart-bar"></i> Garage Service
+                </a>
+                <a href="./request_repair_form.php" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
+                    <i class="fas fa-chart-bar"></i> repair form
+                </a>
             </li> ' : (strtoupper($_SESSION['role'] === 'D/CEO') || strtoupper($_SESSION['role'] === 'CEO') ? '<li class="mb-2">
-                <a href="./quick_history.php" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
+                <a href="../../quick_history.php" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
                     🔄 History 
                 </a>
-                <a href="./quick_request.php?operation-status" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
+                <a href="quick_request.php?operation-status" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
                     <i class="fas fa-cogs"></i> Operations 
                 </a>
-                <a href="./get_report.php" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
+                <a href="../../get_report.php" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
                     <i class="fas fa-chart-bar"></i> Reports
                 </a>
             </li>' : "");
-
-            if(strtoupper($_SESSION['role']) === "DRIVER") {
-                echo "<li class='mb-2'>
-                    <a href='./garage/frontend/request_repair_form.php' class='block p-2 hover:bg-lime-600 rounded'>
-                        <i class='fa-solid fa-car'></i> Request Repaire
-                    </a>";
-            }
-            // echo 
             ?>
             <li class="mb-2">
                 <a href="./pannel/logout.php" class="block p-2 hover:bg-red-600 rounded">

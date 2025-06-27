@@ -51,7 +51,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'generate_pdf') {
     $pdf->Cell(15, 10, '#', 1, 0, 'C', true);
     $pdf->Cell(55, 10, 'Requested By', 1, 0, 'C', true);
     $pdf->Cell(80, 10, 'Service', 1, 0, 'C', true);
-    $pdf->Cell(40, 10, 'Date & Time', 1, 1, 'C', true);
+    $pdf->Cell(40, 10, 'Date', 1, 1, 'C', true);
 
     // Table content
     $pdf->SetFont('Arial', '', 9);

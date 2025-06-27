@@ -9,9 +9,9 @@ if (!isset($_SESSION["staff_code"]) || !isset($_SESSION["phone"])) {
     header("Location: ../../login.php");
 }
 
-// if ($role !== "Driver" || $role !== "LOGISTICS") {
-//     header("Location: ../../dashboard.php");
-// }
+if ($role != "LOGISTICS" && $role != "DRIVER") {
+    header("Location: ../../dashboard.php");
+}
 
 
 ?>
@@ -44,7 +44,7 @@ if (!isset($_SESSION["staff_code"]) || !isset($_SESSION["phone"])) {
 <body class="bg-gradient-to-br from-lime-50 to-lime-100 min-h-screen">
     <div class="flex">
         <?php
-        include "../../components/side.php";
+        include "./side.php";
         ?>
         <div class="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
             <!-- Header -->
@@ -123,7 +123,7 @@ if (!isset($_SESSION["staff_code"]) || !isset($_SESSION["phone"])) {
                                     <th class="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-xs sm:text-sm">#</th>
                                     <th class="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-xs sm:text-sm">👤 Requested By</th>
                                     <th class="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-xs sm:text-sm">🔧 Service</th>
-                                    <th class="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-xs sm:text-sm">⏰ Date & Time</th>
+                                    <th class="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-xs sm:text-sm">⏰ Date</th>
                                     <th class="px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-xs sm:text-sm">Status</th>
                                 </tr>
                             </thead>
@@ -392,6 +392,7 @@ if (!isset($_SESSION["staff_code"]) || !isset($_SESSION["phone"])) {
                 data: $(this).serialize(),
                 dataType: 'json',
                 success: function(response) {
+                    console.log(response);
                     if (response.message) {
                         showMessage(response.message, 'success');
                         // Clear form
