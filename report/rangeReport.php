@@ -25,7 +25,7 @@ function getDatesReport($from, $to)
         {
             $this->SetFont('Times', 'B', 16);
             $this->Image('./img/image.png', 80, 10, 120);
-            $this->Ln(30);
+            $this->Ln(40);
             $this->Cell(0, 10, 'Operation Fuel Report', 0, 1, 'C');
         }
         function Footer()

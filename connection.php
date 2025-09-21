@@ -1,7 +1,7 @@
 <?php
 
 $server = "localhost";
-$base = "aptc_fuel";
+$base = "logistics";
 $user = "root";
 $pass = "";
 $port = 3306;

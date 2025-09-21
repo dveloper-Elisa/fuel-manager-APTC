@@ -71,8 +71,8 @@ if (isset($_GET['pdf_id'])) {
     $quickPdf->Cell(95, 10, $data['prepared_by'], 0, 0, 'L');
     $quickPdf->Cell(95, 10, 'Lt Col. Alexandre KARASIRA', 0, 1, 'L');
 
-    $quickPdf->Cell(95, 10, 'H/LOGISTIC APTC', 0, 0, 'L');
-    $quickPdf->Cell(95, 10, 'D/CEO & DAF APTC', 0, 1, 'L');
+    $quickPdf->Cell(95, 10, 'H/LOGISTIC REG', 0, 0, 'L');
+    $quickPdf->Cell(95, 10, 'D/CEO & DAF REG', 0, 1, 'L');
 
     $quickPdf->Output();
 }

@@ -36,9 +36,9 @@ function get_garage_report($db) {
                 "part_name" => $row['part_name'],
                 "quantity" => $row['quantity'],
                 "unit_price" => $row['unit_price'],
-                "total_labor_cost" => $row['total_labor'],
+                // "total_labor_cost" => $row['total_labor'],
                 "total_parts_cost" => $row['total_parts'],
-                "tax_amount" => $row['tax_amount'],
+                // "tax_amount" => $row['tax_amount'],
                 "grand_total" => $row['grand_total'],
                 "service_date" => $row['service_date']
             ];

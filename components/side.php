@@ -35,10 +35,11 @@
                 <a href="./get_report.php" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
                     <i class="fas fa-chart-bar"></i> Reports
                 </a>
-                <a href="./garage/frontend/garage_done.php" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
-                    <i class="fas fa-chart-bar"></i> Garage Reports
-                </a>
-            </li> ' : (strtoupper($_SESSION['role'] === 'D/CEO') || strtoupper($_SESSION['role'] === 'CEO') ? '<li class="mb-2">
+                </li> '
+                // <a href="./garage/frontend/garage_done.php" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
+                //     <i class="fas fa-chart-bar"></i> Garage Reports
+                // </a>
+             : (strtoupper($_SESSION['role'] === 'D/CEO') || strtoupper($_SESSION['role'] === 'CEO') ? '<li class="mb-2">
                 <a href="./quick_history.php" class="block p-2 whitespace-nowrap hover:bg-lime-600 rounded">
                     🔄 History 
                 </a>

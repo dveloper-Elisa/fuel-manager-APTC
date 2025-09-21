@@ -1,4 +1,8 @@
 <?php
+error_reporting(E_ALL);
+ini_set("display_errors", 1);
+
+
 header('Content-Type: application/json');
 
 include "../../connection.php";
@@ -12,6 +16,22 @@ if (!$input) {
 }
 
 // Insert into service_records table
+// $stmt = $db->prepare("INSERT INTO service_records (license_plate, make, model, notes, total_parts, grand_total, service_date) VALUES (?, ?, ?, ?, ?, ?, ?)");
+// $stmt->bind_param(
+//     "ssssdss",
+//     $input['license_plate'],
+//     $input['make'],
+//     $input['model'],
+//     $input['notes'],
+//     $input['total_parts_cost'],
+//     $input['grand_total'],
+//     $input['service_date']
+// );
+
+// Convert datetime
+$service_date = date("Y-m-d H:i:s", strtotime($input['service_date']));
+
+// Insert into service_records table
 $stmt = $db->prepare("INSERT INTO service_records (license_plate, make, model, notes, total_parts, grand_total, service_date) VALUES (?, ?, ?, ?, ?, ?, ?)");
 $stmt->bind_param(
     "ssssdss",
@@ -21,8 +41,10 @@ $stmt->bind_param(
     $input['notes'],
     $input['total_parts_cost'],
     $input['grand_total'],
-    $input['service_date']
+    $service_date
 );
+
+
 
 if ($stmt->execute()) {
     $record_id = $stmt->insert_id;

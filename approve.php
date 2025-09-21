@@ -65,6 +65,7 @@ if (isset($_GET["approve"])) {
             }
         }
     }
+    $realPrice = 0;
     if (strtoupper($_SESSION['role']) == 'LOGISTICS') {
         if (isset($_POST['verify'])) {
             $granted_quantinty = $_POST['received'];
@@ -89,7 +90,7 @@ if (isset($_GET["approve"])) {
 
                 // Check if the price exists
                 if ($row = $result->fetch_assoc()) {
-                    $realPrice = $row["uplt"] * $granted_quantinty;
+                    $realPrice = (int)$row["uplt"] * (int)$granted_quantinty;
                 }
 
                 $approve = mysqli_query($db, "UPDATE fuel_request SET received_qty = '$granted_quantinty', price = '$realPrice', verified_by = '$verified_by' WHERE req_id = '$id'");

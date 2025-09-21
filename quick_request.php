@@ -1,4 +1,8 @@
 <?php
+error_reporting(E_ALL);
+ini_set("dislay_errors", 1);
+
+
 session_start();
 /**
  * THIS FILE IS BEING ACCESSED BY TWO USERS

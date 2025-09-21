@@ -1,3 +1,9 @@
+<?php
+error_reporting(E_ALL);
+ini_set("display_errors", 1);
+?>
+
+
 <body>
     <script src="https://cdn.tailwindcss.com"></script>
 

@@ -27,7 +27,7 @@ if (isset($_GET['down-operation'])) {
     $quickPdf->AddPage();
     $quickPdf->SetMargins(20, 20, 20);
     $quickPdf->SetFont('Times', '', 12);
-    $quickPdf->Image('./img/image.png', 40, 10, 120);
+    $quickPdf->Image('./img/image.png', 30, 10, 120);
     $quickPdf->Ln(30);
     $quickPdf->Cell(0, 10, 'Date:   ' . date('Y-m-d', strtotime($data['created_at'])), 0, 0, 'R');
     $quickPdf->Ln(20);
@@ -66,8 +66,8 @@ if (isset($_GET['down-operation'])) {
     $quickPdf->Cell(95, 10, $data['prepared_by'], 0, 0, 'L');
     $quickPdf->Cell(95, 10, 'Lt Col. Alexandre KARASIRA', 0, 1, 'L');
 
-    $quickPdf->Cell(95, 10, 'H/LOGISTIC APTC', 0, 0, 'L');
-    $quickPdf->Cell(95, 10, 'D/CEO & DAF APTC', 0, 1, 'L');
+    $quickPdf->Cell(95, 10, 'H/LOGISTIC REG', 0, 0, 'L');
+    $quickPdf->Cell(95, 10, 'D/CEO & DAF REG', 0, 1, 'L');
 
     $quickPdf->Output();
 }
@@ -88,8 +88,8 @@ class PDF extends FPDF
     function Header()
     {
         $this->SetFont('Times', 'B', 16);
-        $this->Image('./img/image.png', 80, 10, 120);
-        $this->Ln(30);
+        $this->Image('./img/image.png', 100, 10, 100);
+        $this->Ln(50);
         $this->Cell(0, 10, 'Operation Fuel Report', 0, 1, 'C');
     }
     function Footer()

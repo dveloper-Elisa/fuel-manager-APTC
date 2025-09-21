@@ -21,7 +21,7 @@ if (isset($_GET['id'])) {
     $fuelDocument->AddPage();
     $fuelDocument->SetFont('Times', '', 12);
     $fuelDocument->Image('./img/image.png', 60, 10, 100,);
-    $fuelDocument->Ln(30);
+    $fuelDocument->Ln(40);
     $fuelDocument->SetFont('Times', 'B', 16);
     $fuelDocument->Cell(0, 10, 'Fuel Request Document', 0, 1, 'C');
     $fuelDocument->Ln(15);
@@ -117,8 +117,8 @@ if (isset($_GET['id'])) {
             $fuelDocument->Cell(95, 10, $row['verified_by'], 0, 0, 'L');
             $fuelDocument->Cell(95, 10, $row['approved_by'], 0, 1, 'L');
 
-            $fuelDocument->Cell(95, 10, 'H/LOGISTIC APTC', 0, 0, 'L');
-            $fuelDocument->Cell(95, 10, 'D/CEO & DAF APTC', 0, 1, 'L');
+            $fuelDocument->Cell(95, 10, 'H/LOGISTIC REG', 0, 0, 'L');
+            $fuelDocument->Cell(95, 10, 'D/CEO & DAF REG', 0, 1, 'L');
         } else {
             echo 'No Request found';
         }
@@ -158,27 +158,7 @@ if (isset($_GET['req_id'])) {
     exit;
 }
 
-// APPROVE REQUEST ON BEHALF OF LOGISTICS TO VERIFY IS DESABLED AND SENT TO THE approve.php THEN IT DIFFER ACCORDING TO ROLES 
-// if (isset($_GET['verify'])) {
-//     if (isset($_POST['verifye'])) {
-//         echo $_POST['received'];
-//     }
-//     $req_id = $_GET['verify'];
-//     $verifier = $_SESSION['name'];
-
-//     $query = 'UPDATE fuel_request SET verified_by = ? WHERE req_id = ?';
-//     $stmt = $db->prepare($query);
-//     $stmt->bind_param('si', $verifier, $req_id);
-//     if ($stmt->execute()) {
-//         echo json_encode(['message' => 'Request Verifiyed']);
-//     } else {
-//         echo json_encode(['message' => 'Request not Verifiyed']);
-//     }
-//     exit;
-// }
-
-/* 
-
+/*
 CANCELING REQUEST on BEHALF OF LOGISTICS
 AND ON BEHAKF OF CEO or D/CEO
 
@@ -339,6 +319,7 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
             echo '<th class="p-2 border text-[12px]">Destination</th>';
             echo '<th class="p-2 border text-[12px]">Date to go</th>';
             echo '<th class="p-2 border text-[12px]">Fuel Requested</th>';
+            echo '<th class="p-2 border text-[12px]" colspan="2">Status</th>';
 
             if (strtoupper($_SESSION['role']) === 'D/CEO' || strtoupper($_SESSION['role']) === 'CEO') {
                 echo '<th class="p-2 border text-[12px] no-print">Actions</th>';
@@ -381,7 +362,7 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
                     echo '</td>';
                 }
 
-                if (strtolower($_SESSION['role']) === 'logistics') {
+                // if (strtolower($_SESSION['role']) === 'logistics' ) {
                     if (isset($_GET['status']) && $_GET['status'] === 'rejected') {
                         echo '<td class="p-3 border text-red-500 hover:underline">
                                         Rejected
@@ -399,11 +380,14 @@ if (isset($_GET['reject']) || isset($_GET['cancel'])) {
                             echo '<td class="text-green-500 font-bold p-3 border">Approved 
                             <a target="_blank" href="?id=' . urlencode($row['req_id']) . '" class="text-blue-500 hover:underline ml-2 flex flex-row gap-2 items-center"><span class="material-icons text-[20px text-blue-500" title="Download Pdf">picture_as_pdf</span></a>
                             </td>';
+                            echo '<td class="text-green-500 font-bold p-3 border">Approved 
+                            <a target="_blank" href="?id=' . urlencode($row['req_id']) . '" class="text-blue-500 hover:underline ml-2 flex flex-row gap-2 items-center"><span class="material-icons text-[20px text-blue-500" title="Download Pdf">picture_as_pdf</span></a>
+                            </td>';
                         } else {
                             echo '<td class="text-blue-800 p-3 border">Verified</td>';
                         }
                     }
-                }
+                // }
 
                 echo '</tr>';
                 $i++;
